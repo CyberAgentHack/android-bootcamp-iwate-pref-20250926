@@ -108,3 +108,26 @@ Column、RowをはじめとしたJetpack ComposeのUIを調査して自分なり
 参考サイト
 - [Compose レイアウトの基本](https://developer.android.com/develop/ui/compose/layouts/basics)
 - [Compose の基本レイアウト](https://developer.android.com/codelabs/jetpack-compose-layouts)
+
+## Day2
+1. Composeでの状態管理
+2. Composeでのレイアウト
+3. Composeでのナビゲーション
+4. Lazyリスト
+
+### 宿題
+以下の要件を満たすアプリを作成してみましょう！
+
+1. 画面を2つ以上作成し、Navigationによって画面を行き来できる
+2. `LazyColumn`または`LazyRow`を1箇所以上に利用する
+3. ユーザの操作により状態が変わり、その状態を`remember`と`mutableStateOf(..)`を利用して管理する
+
+例) Xのようなアプリ
+- タイムライン画面とポスト画面がある → 1の要件を満たす
+- タイムライン画面はスクロールして投稿が見れる → 2の要件を満たす
+- ポストにいいねするとポストに❤️がつく → 3の要件を満たす
+
+完成したら画面録画し、その動画と**ソースコード**を`#android_bootcamp2025`に投稿してください！  
+(サイバーエージェント社員にメンションもお願いします)
+
+今回のソースコード提出は、クローンしたリポジトリ全体をzipファイルにして、アップロードしてください。
