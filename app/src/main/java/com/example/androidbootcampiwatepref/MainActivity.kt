@@ -52,22 +52,30 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+//ルート定義
+sealed interface ProfileRoutes {
+    @Serializable
+    data object View : ProfileRoutes
+    
+    @Serializable
+    data object Edit : ProfileRoutes
+}
 
 //テーマの状態
 enum class AppTheme {
     SYSTEM, LIGHT, DARK
 }
 
-//画面の状態
-enum class ProfileScreenState {
-    VIEW, EDIT
-}
 //プロフィール情報のデータクラス
 data class ProfileData(
     val nickname: String,
@@ -84,7 +92,6 @@ class MainActivity : ComponentActivity() {
         setContent{
             //状態管理
             var currentTheme by remember { mutableStateOf(AppTheme.SYSTEM) }
-            var screenState by remember { mutableStateOf(ProfileScreenState.VIEW) }
 
             //プロフィールデータ全体を管理
             var profileData by remember {
@@ -106,58 +113,116 @@ class MainActivity : ComponentActivity() {
                 AppTheme.LIGHT -> false
                 AppTheme.DARK -> true
             }
-            AndroidBootcampIwatePrefTheme(darkTheme = useDarkTheme) { // darkTheme を渡す
-                // A surface container using the 'background' color from the theme
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = { Text(if(screenState == ProfileScreenState.VIEW)"プロフィール" else "プロフィール編集") },
-                            navigationIcon = {
-                                if(screenState == ProfileScreenState.EDIT){
-                                   IconButton(onClick = { screenState = ProfileScreenState.VIEW }) {
-                                       Icon(Icons.Default.ArrowBack, contentDescription = "キャンセル")
-                                   }
-                                }
-                            },
-                            actions = {
-                                //閲覧画面のときに編集ボタンを表示
-                                if(screenState == ProfileScreenState.VIEW){
-                                    IconButton(onClick = { screenState = ProfileScreenState.EDIT }) {
-                                        Icon(Icons.Default.Edit, contentDescription = "編集")
-                                    }
-                                }
-                                //テーマ切り替えボタン
-                                IconButton(onClick = {
+            AndroidBootcampIwatePrefTheme(darkTheme = useDarkTheme) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    
+                    NavHost(
+                        navController = navController,
+                        startDestination = ProfileRoutes.View
+                    ) {
+                        composable<ProfileRoutes.View> {
+                            ProfileViewScreen(
+                                profileData = profileData,
+                                useDarkTheme = useDarkTheme,
+                                onThemeToggle = {
                                     currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
-                                }) {
-                                    Text(if (useDarkTheme) "☀️" else "🌙")
+                                },
+                                onEditClick = {
+                                    navController.navigate(ProfileRoutes.Edit)
                                 }
-                            }
-                        )
-                    }
-                ) { innerPadding ->
-                    //状態に応じて表示画面切り替え
-                    when (screenState) {
-                        ProfileScreenState.VIEW -> {
-                            ProfileViewContent(
-                                innerPadding = innerPadding,
-                                profileData = profileData
                             )
                         }
-                        ProfileScreenState.EDIT -> {
-                        ProfileEditContent(
-                            innerPadding = innerPadding,
-                            initialProfileData = profileData,
-                            onSaveClick = { updateData ->
-                                profileData = updateData
-                                screenState = ProfileScreenState.VIEW
-                            }
-                        )
+                        
+                        composable<ProfileRoutes.Edit> {
+                            ProfileEditScreen(
+                                profileData = profileData,
+                                useDarkTheme = useDarkTheme,
+                                onThemeToggle = {
+                                    currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
+                                },
+                                onBackClick = {
+                                    navController.popBackStack()
+                                },
+                                onSaveClick = { updatedData ->
+                                    profileData = updatedData
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+// プロフィール閲覧画面
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileViewScreen(
+    profileData: ProfileData,
+    useDarkTheme: Boolean,
+    onThemeToggle: () -> Unit,
+    onEditClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("プロフィール") },
+                actions = {
+                    IconButton(onClick = onEditClick) {
+                        Icon(Icons.Default.Edit, contentDescription = "編集")
+                    }
+                    IconButton(onClick = onThemeToggle) {
+                        Text(if (useDarkTheme) "☀️" else "🌙")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        ProfileViewContent(
+            innerPadding = innerPadding,
+            profileData = profileData
+        )
+    }
+}
+
+// プロフィール編集画面
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileEditScreen(
+    profileData: ProfileData,
+    useDarkTheme: Boolean,
+    onThemeToggle: () -> Unit,
+    onBackClick: () -> Unit,
+    onSaveClick: (ProfileData) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("プロフィール編集") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "キャンセル")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onThemeToggle) {
+                        Text(if (useDarkTheme) "☀️" else "🌙")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        ProfileEditContent(
+            innerPadding = innerPadding,
+            initialProfileData = profileData,
+            onSaveClick = onSaveClick
+        )
     }
 }
 
