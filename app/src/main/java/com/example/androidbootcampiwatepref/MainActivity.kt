@@ -1,6 +1,5 @@
 package com.example.androidbootcampiwatepref
 
-import android.content.ClipData
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,14 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -55,13 +51,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
-import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -90,41 +81,6 @@ data class ProfileData(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*
-        setContent {
-            /*
-            //CountUp()
-            MyLayout()
-            HomeScreen()
-            */
-            AndroidBootcampIwatePrefTheme {
-                Surface (
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ){
-                    val navController = rememberNavController()
-                    NavHost(
-                        navController = navController,
-                        startDestination = Routes.Home,
-                    ){
-                        composable<Routes.Home>{
-                            HomeScreen(
-                                modifier = Modifier.fillMaxSize(),
-                                navigateTo = { route ->
-                                    navController.navigate(route)
-                                }
-                            )
-                        }
-                        composable<Routes.Search>{
-                            SearchScreen(
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        */
         setContent{
             //状態管理
             var currentTheme by remember { mutableStateOf(AppTheme.SYSTEM) }
@@ -205,81 +161,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/*
-//@Composable
-fun CountUp(
-    modifier: Modifier = Modifier,
-){
-    var count = remember { 0}
-    Column(
-        modifier = modifier
-    ){
-        Text("count:$count")
-        Button(
-            onClick = {
-            count++
-        }
-        ) {
-            Text("count up!")
-        }
-    }
-}
-
-private const val contentTypeOfItem = "CONTENT_TYPE_ITEM"
-
-@Composable
-fun MyLayout() {
-    Column {
-        Row{
-            Text("Row1")
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Row1の説明")
-        }
-        Row{
-            Text("Row2")
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Row2の説明")
-        }
-        Row{
-            Text("Row3")
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Row3の説明")
-        }
-        (0..100000).forEach {
-            Item(it)
-        }
-        
-        LazyColumn {
-            items(
-                count = 1000,
-                key = { index -> index },
-                contentType = { contentTypeOfItem },
-            ){  count ->
-                Item(count)
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeScreen(
-    modifier:  Modifier = Modifier
-) {
-    Box(
-        modifier = modifier    ){
-        MyLayout()
-    }
-}
-
-@Composable
-fun Item(count: Int){
-    Row{
-        Text("Row$count")
-        Spacer(modifier = Modifier.width(12.dp))
-        Text("Row${count}の説明")
-    }
-}
-*/
 @Composable
 fun ProfileHeader(nickname: String, id: String, modifier: Modifier = Modifier) {
     Box(
@@ -558,62 +439,3 @@ fun ProfileEditContent(
         }
     }
 }
-/*
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AndroidBootcampIwatePrefTheme {
-        Greeting("Android")
-    }
-}
-}
-*/
-/*
-sealed interface Routes {
-    @kotlinx.serialization.Serializable
-    data object Home : Routes
-
-    @Serializable
-    data object Search : Routes
-}
-@Composable
-fun SearchScreen(
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = "Search Screen")
-    }
-}
-@Composable
-fun HomeScreen(
-    modifier: Modifier = Modifier,
-    navigateTo: (route: Routes) -> Unit
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(text ="Home Screen")
-            Button(onClick = { navigateTo(Routes.Search) }) {
-                Text(text = "Go to Search Screen")
-            }
-        }
-    }
-}
-*/
