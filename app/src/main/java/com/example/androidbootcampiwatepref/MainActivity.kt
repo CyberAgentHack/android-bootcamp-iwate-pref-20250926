@@ -67,7 +67,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-/*
+
 //テーマの状態
 enum class AppTheme {
     SYSTEM, LIGHT, DARK
@@ -85,11 +85,12 @@ data class ProfileData(
     val genderIndex: Int,
     val birthDateMillis: Long?
 )
-*/
+
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        /*
         setContent {
             /*
             //CountUp()
@@ -123,7 +124,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        /*
+        */
         setContent{
             //状態管理
             var currentTheme by remember { mutableStateOf(AppTheme.SYSTEM) }
@@ -196,40 +197,39 @@ class MainActivity : ComponentActivity() {
                                 screenState = ProfileScreenState.VIEW
                             }
                         )
+                        }
                     }
                 }
             }
-        }*/
+        }
     }
 }
 
+/*
 //@Composable
-        /*
-        fun CountUp(
-            modifier: Modifier = Modifier,
-        ){
-            var count = remember { 0}
-            Column(
-                modifier = modifier
-            ){
-                Text("count:$count")
-                Button(
-                    onClick = {
-                    count++
-                }
-                ) {
-                    Text("count up!")
-                }
-            }
-        }*/
+fun CountUp(
+    modifier: Modifier = Modifier,
+){
+    var count = remember { 0}
+    Column(
+        modifier = modifier
+    ){
+        Text("count:$count")
+        Button(
+            onClick = {
+            count++
+        }
+        ) {
+            Text("count up!")
+        }
+    }
+}
 
 private const val contentTypeOfItem = "CONTENT_TYPE_ITEM"
-
 
 @Composable
 fun MyLayout() {
     Column {
-        /*
         Row{
             Text("Row1")
             Spacer(modifier = Modifier.width(12.dp))
@@ -244,12 +244,11 @@ fun MyLayout() {
             Text("Row3")
             Spacer(modifier = Modifier.width(12.dp))
             Text("Row3の説明")
-        }*/
-        /*
+        }
         (0..100000).forEach {
             Item(it)
         }
-        */
+        
         LazyColumn {
             items(
                 count = 1000,
@@ -259,10 +258,9 @@ fun MyLayout() {
                 Item(count)
             }
         }
-
     }
 }
-/*
+
 @Composable
 fun HomeScreen(
     modifier:  Modifier = Modifier
@@ -272,7 +270,7 @@ fun HomeScreen(
         MyLayout()
     }
 }
-*/
+
 @Composable
 fun Item(count: Int){
     Row{
@@ -281,7 +279,7 @@ fun Item(count: Int){
         Text("Row${count}の説明")
     }
 }
-/*
+*/
 @Composable
 fun ProfileHeader(nickname: String, id: String, modifier: Modifier = Modifier) {
     Box(
@@ -560,7 +558,7 @@ fun ProfileEditContent(
         }
     }
 }
-
+/*
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -578,6 +576,7 @@ fun GreetingPreview() {
 }
 }
 */
+/*
 sealed interface Routes {
     @kotlinx.serialization.Serializable
     data object Home : Routes
@@ -617,3 +616,4 @@ fun HomeScreen(
         }
     }
 }
+*/
