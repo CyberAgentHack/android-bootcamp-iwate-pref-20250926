@@ -17,11 +17,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -66,7 +71,7 @@ import java.util.Locale
 sealed interface ProfileRoutes {
     @Serializable
     data object View : ProfileRoutes
-    
+
     @Serializable
     data object Edit : ProfileRoutes
 }
@@ -82,7 +87,8 @@ data class ProfileData(
     val id: String,
     val bio: String,
     val genderIndex: Int,
-    val birthDateMillis: Long?
+    val birthDateMillis: Long?,
+    val hobbies: List<String> = emptyList()
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +107,8 @@ class MainActivity : ComponentActivity() {
                         id ="",
                         bio = "",
                         genderIndex = 0,
-                        birthDateMillis = Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis
+                        birthDateMillis = Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis,
+                        hobbies = emptyList()
                     )
                 )
             }
@@ -119,7 +126,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    
+
                     NavHost(
                         navController = navController,
                         startDestination = ProfileRoutes.View
@@ -136,7 +143,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        
+
                         composable<ProfileRoutes.Edit> {
                             ProfileEditScreen(
                                 profileData = profileData,
@@ -306,6 +313,36 @@ fun ProfileViewContent(innerPadding: PaddingValues,profileData: ProfileData){
             ProfileInfoRow(label = "性別",value = genderOptions[profileData.genderIndex])
             ProfileInfoRow(label = "生年月日",value = profileData.birthDateMillis?.let { birthDateFormatter.format(Date(it)
             ) } ?: "未設定")
+
+            //趣味・興味リスト
+            Column(modifier = Modifier.fillMaxWidth()){
+                Text(
+                    text = "趣味・興味",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                if(profileData.hobbies.isEmpty()){
+                    Text(
+                        text = "",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }else{
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 8.dp)
+                    ){
+                        items(profileData.hobbies){ hobby ->
+                            SuggestionChip(
+                                onClick ={},
+                                label = { Text(hobby) }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -353,6 +390,8 @@ fun ProfileEditContent(
     var selectedDateMillis by remember { mutableStateOf(initialProfileData.birthDateMillis) }
     var showDatePickerDialog by remember { mutableStateOf(false) }
     val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
+    var hobbies by remember { mutableStateOf(initialProfileData.hobbies.toMutableList()) }
+    var hobbyInput by remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         modifier = Modifier
@@ -485,6 +524,67 @@ fun ProfileEditContent(
                 }
             }
 
+            //趣味・興味入力セクション
+            Text(
+                "趣味・興味",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                OutlinedTextField(
+                    value = hobbyInput,
+                    onValueChange = { hobbyInput = it },
+                    label = { Text("趣味を入力") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                IconButton(
+                    onClick = {
+                        if(hobbyInput.text.isNotBlank() && !hobbies.contains(hobbyInput.text)){
+                            hobbies = hobbies.toMutableList().apply { add(hobbyInput.text) }
+                            hobbyInput = TextFieldValue("")
+                        }
+                    }
+                ){
+                    Icon(Icons.Default.Add, contentDescription = "追加")
+                }
+            }
+
+            //趣味タグ一覧
+            if(hobbies.isNotEmpty()){
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ){
+                    items(hobbies) { hobby ->
+                        SuggestionChip(
+                            onClick = {
+                                hobbies = hobbies.toMutableList().apply{ remove(hobby) }
+                            },
+                            label = {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(hobby)
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "削除",
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
             //保存ボタン
             Button(
                 onClick = {
@@ -493,7 +593,8 @@ fun ProfileEditContent(
                         id = id.text,
                         bio = bio.text,
                         genderIndex = selectedGenderIndex,
-                        birthDateMillis = selectedDateMillis
+                        birthDateMillis = selectedDateMillis,
+                        hobbies = hobbies
                     )
                     onSaveClick(updatedData)
                 },
