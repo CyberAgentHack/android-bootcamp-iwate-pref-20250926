@@ -3,104 +3,82 @@ package com.example.androidbootcampiwatepref
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidbootcampiwatepref.data.datastore.AppDataStore
-import com.example.androidbootcampiwatepref.domain.domainobject.News
-import com.example.androidbootcampiwatepref.viewmodel.NewsViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.androidbootcamp2025.ui.components.AppBar
+import com.example.androidbootcamp2025.ui.components.BottomNavigation
+import com.example.androidbootcampiwatepref.ui.AppNavHost
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             AndroidBootcampIwatePrefTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val context = LocalContext.current
-                    val newsViewModel = viewModel {
-                        NewsViewModel(
-                        dataStore = AppDataStore(context = context),
-                        )
-                    }
-                    val uiState by newsViewModel.uiState.collectAsStateWithLifecycle()
-                    Column {
-                        NewsList(
-                            newsList = uiState.newsList,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Button(
-                            onClick = { newsViewModel.toggleNewsListOrder() },
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        ) {
-                            Text(text = "並び替えの切り替え")
-                        }
-                    }
-                }
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
-fun NewsList(
-    newsList: List<News>,
-    modifier: Modifier = Modifier,
-) {
-    LazyColumn(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(
-            items = newsList,
-            key = { news -> news.id },
-        ) { news ->
-            News(
-                news = news,
-                modifier = Modifier.animateItem(),
-            )
-        }
-    }
-}
+fun MainScreen() {
+    val navController = rememberNavController()
 
-@Composable
-fun News(
-    news: News,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-        ) {
-            Text(
-                text = news.title,
-            )
-            Text(
-                text = news.body,
+    // NavControllerから現在のルートを取得
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    //各画面で共通している部分を構築
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { AppBar() },
+        bottomBar = {
+            BottomNavigation(
+                currentRoute = currentRoute,
+                //クリックされたら画面のルート名を受け取る
+                onNavigate = { route ->
+
+                    //同じ画面への遷移を防ぐ
+                    if (currentRoute != route) {
+
+                        //画面遷移実行
+                        navController.navigate(route) {
+                            //これがないと、画面遷移のたびに画面が積み重なってしまう
+                            //startDestinationId：最初の画面のID
+                            //スタックには常に[最初の画面, 現在の画面]だけが残る
+                            popUpTo(navController.graph.startDestinationId) {
+
+                                //遷移前の画面の状態を保存する
+                                //(例: スクロール位置・入力フォーム内容・選択状態など)
+                                saveState = true
+                            }
+
+                            //同じ画面を重複して開かない
+                            //これがないと5回ホームボタンを押すと「ホーム」が5つ積まれる
+                            launchSingleTop = true
+
+                            //これがあることで、スクロール位置などを記憶し、画面遷移前の状態に戻せる
+                            restoreState = true
+                        }
+                    }
+                }
             )
         }
+    ) { paddingValues -> // Scaffoldの内のパディング値を取得
+        AppNavHost(
+            navController = navController,
+            startDestination = "home",     // 最初に表示する画面
+            modifier = Modifier.padding(paddingValues)  //パディングを適応
+        )
     }
 }

@@ -2,7 +2,6 @@ package com.example.androidbootcampiwatepref.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,9 +23,9 @@ fun ArticlesScreen(
     modifier: Modifier = Modifier,
     viewModel: ArticlesViewModel = viewModel(),
 ) {
-    val uiModel by viewModel.uiModel.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     ArticleList(
-        articles = uiModel.articles,
+        articles = uiState.articles,
         modifier = modifier,
     )
 }
