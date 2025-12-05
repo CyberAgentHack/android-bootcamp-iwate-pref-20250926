@@ -12,9 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.androidbootcamp2025.ui.components.AppBar
-import com.example.androidbootcamp2025.ui.components.BottomNavigation
 import com.example.androidbootcampiwatepref.ui.AppNavHost
+import com.example.androidbootcampiwatepref.ui.components.AppBar
+import com.example.androidbootcampiwatepref.ui.components.BottomNavigation
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
 
 class MainActivity : ComponentActivity() {

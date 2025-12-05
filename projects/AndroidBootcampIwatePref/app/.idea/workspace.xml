@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4bb42409-7786-45e7-9814-60404b2c5071" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/data/repository/YoutubeRepository.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/domain/domainobject/YoutubeModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/ui/Navigation.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/ui/components/BarComponent.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/ui/components/YoutubeComponent.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/ui/screen/HomeScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/ui/screen/YoutubeScreen.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/viewmodel/YoutubeViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../AndroidBootcampIwatePrefDay3/app/src/main/java/com/example/androidbootcampiwatepref/MainActivity.kt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "tsuchida-y"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/CyberAgentHack/android-bootcamp-iwate-pref-20250926.git",
+    "accountId": "050528e6-0490-4f42-9c66-09c2989d3bb7"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="36PtpBS9oqPxCeilrmBYvujShX0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "android.gradle.sync.needed": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "tsuchida-y/day3",
+    "last_opened_file_path": "/Users/tsuchida/Documents/Programming/android-bootcamp-iwate-pref-20250926/projects/AndroidBootcampIwatePref/app"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4bb42409-7786-45e7-9814-60404b2c5071" name="Changes" comment="" />
+      <created>1764920214652</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764920214652</updated>
+    </task>
+    <servers />
+  </component>
+</project>
