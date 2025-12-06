@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.*
+import androidx.navigation.toRoute
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import com.example.androidbootcampiwatepref.data.ProfileDataStore
@@ -73,6 +74,9 @@ class MainActivity : ComponentActivity() {
             // カードデザイン設定を管理
             var currentCardDesign by remember { mutableStateOf(com.example.androidbootcampiwatepref.domain.model.CardDesign.CLASSIC) }
             
+            // 受け取った名刺リストを管理
+            var savedCards by remember { mutableStateOf<List<BusinessCardData>>(emptyList()) }
+            
             LaunchedEffect(Unit) {
                 combine(
                     profileDataStore.nicknameFlow,
@@ -85,7 +89,8 @@ class MainActivity : ComponentActivity() {
                     profileDataStore.profileImageUriFlow,
                     profileDataStore.profileImageOriginalUriFlow,
                     profileDataStore.headerImageUriFlow,
-                    profileDataStore.cardDesignFlow
+                    profileDataStore.cardDesignFlow,
+                    profileDataStore.savedCardsFlow
                 ) { values ->
                     val nickname = values[0] as String
                     val bio = values[1] as String
@@ -98,6 +103,8 @@ class MainActivity : ComponentActivity() {
                     val profImageOriginalUri = values[8] as String?
                     val headImageUri = values[9] as String?
                     val cardDesign = values[10] as String
+                    @Suppress("UNCHECKED_CAST")
+                    val cards = values[11] as List<BusinessCardData>
                     
                     profileData = ProfileData(
                         nickname = nickname,
@@ -120,6 +127,7 @@ class MainActivity : ComponentActivity() {
                     profileImageUri = profImageUri
                     profileImageOriginalUri = profImageOriginalUri
                     headerImageUri = headImageUri
+                    savedCards = cards
                 }.collect {}
             }
             
@@ -202,33 +210,7 @@ class MainActivity : ComponentActivity() {
                                 profileData = profileData,
                                 profileImageUri = profileImageUri,
                                 profileImageOriginalUri = profileImageOriginalUri,
-                                headerImageUri = headerImageUri,
-                                useDarkTheme = useDarkTheme,
-                                currentFont = currentFont,
                                 currentCardDesign = currentCardDesign,
-                                // テーマ切り替えボタンが押された時の処理
-                                onThemeToggle = {
-                                    // 現在のテーマに応じて次のテーマに切り替え
-                                    currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
-                                    // 変更したテーマ設定をDataStoreに保存
-                                    lifecycleScope.launch {
-                                        profileDataStore.saveTheme(currentTheme.name)
-                                    }
-                                },
-                                // フォント切り替えボタンが押された時の処理
-                                onFontToggle = {
-                                    // 次のフォントに切り替え
-                                    currentFont = when (currentFont) {
-                                        AppFont.DEFAULT -> AppFont.SERIF
-                                        AppFont.SERIF -> AppFont.MONOSPACE
-                                        AppFont.MONOSPACE -> AppFont.CURSIVE
-                                        AppFont.CURSIVE -> AppFont.DEFAULT
-                                    }
-                                    // 変更したフォント設定をDataStoreに保存
-                                    lifecycleScope.launch {
-                                        profileDataStore.saveFont(currentFont.name)
-                                    }
-                                },
                                 // 編集ボタンが押された時の処理
                                 onEditClick = {
                                     // 編集画面に遷移
@@ -238,6 +220,14 @@ class MainActivity : ComponentActivity() {
                                 onSettingsClick = {
                                     // 設定画面に遷移
                                     navController.navigate(ProfileRoutes.Settings)
+                                },
+                                // QRコード表示ボタンが押された時の処理
+                                onQRCodeClick = {
+                                    navController.navigate(ProfileRoutes.QRCodeDisplay)
+                                },
+                                // 名刺ホルダーボタンが押された時の処理
+                                onCardHolderClick = {
+                                    navController.navigate(ProfileRoutes.CardHolder)
                                 }
                             )
                         }
@@ -310,6 +300,94 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 }
                             )
+                        }
+                        
+                        // QRコード表示画面
+                        composable<ProfileRoutes.QRCodeDisplay> {
+                            QRCodeDisplayScreen(
+                                nickname = profileData.nickname,
+                                bio = profileData.bio,
+                                genderIndex = profileData.genderIndex,
+                                birthDateMillis = profileData.birthDateMillis,
+                                hobbies = profileData.hobbies,
+                                cardDesign = currentCardDesign.name,
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onNavigateToScanner = {
+                                    navController.navigate(ProfileRoutes.QRCodeScanner)
+                                }
+                            )
+                        }
+                        
+                        // QRコードスキャン画面
+                        composable<ProfileRoutes.QRCodeScanner> {
+                            QRCodeScannerScreen(
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onQRCodeScanned = { qrContent ->
+                                    // QRコードからBusinessCardDataをパース
+                                    val scannedCard = BusinessCardData.fromJson(qrContent)
+                                    if (scannedCard != null) {
+                                        // 名刺を保存リストに追加
+                                        val updatedCards = savedCards + scannedCard
+                                        savedCards = updatedCards
+                                        lifecycleScope.launch {
+                                            profileDataStore.saveSavedCards(updatedCards)
+                                        }
+                                        // 名刺ホルダー画面に遷移
+                                        navController.navigate(ProfileRoutes.CardHolder) {
+                                            popUpTo(ProfileRoutes.QRCodeDisplay) { inclusive = false }
+                                        }
+                                    } else {
+                                        // パース失敗時は戻る
+                                        navController.popBackStack()
+                                    }
+                                }
+                            )
+                        }
+                        
+                        // 名刺ホルダー画面
+                        composable<ProfileRoutes.CardHolder> {
+                            CardHolderScreen(
+                                savedCards = savedCards,
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onDeleteCard = { cardToDelete ->
+                                    val updatedCards = savedCards.filter { it != cardToDelete }
+                                    savedCards = updatedCards
+                                    lifecycleScope.launch {
+                                        profileDataStore.saveSavedCards(updatedCards)
+                                    }
+                                },
+                                onCardClick = { card ->
+                                    val index = savedCards.indexOf(card)
+                                    if (index >= 0) {
+                                        navController.navigate(ProfileRoutes.CardDetail(index))
+                                    }
+                                }
+                            )
+                        }
+                        
+                        // 名刺詳細画面
+                        composable<ProfileRoutes.CardDetail> { backStackEntry ->
+                            val cardDetail = backStackEntry.toRoute<ProfileRoutes.CardDetail>()
+                            val card = savedCards.getOrNull(cardDetail.cardIndex)
+                            if (card != null) {
+                                CardDetailScreen(
+                                    card = card,
+                                    onNavigateBack = {
+                                        navController.popBackStack()
+                                    }
+                                )
+                            } else {
+                                // カードが見つからない場合は戻る
+                                LaunchedEffect(Unit) {
+                                    navController.popBackStack()
+                                }
+                            }
                         }
                     }
                 }

@@ -184,31 +184,6 @@ fun ProfileEditContent(
             cropImageLauncher.launch(uCropIntent)
         }
     }
-    
-    // 画像選択ランチャー（ヘッダー画像用）
-    val headerImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { sourceUri ->
-            isSelectingProfileImage = false
-            
-            // トリミング後の画像を保存するファイルを作成
-            val destinationFile = File(context.cacheDir, "cropped_header_${System.currentTimeMillis()}.jpg")
-            val destinationUri = FileProvider.getUriForFile(
-                context,
-                "com.example.androidbootcampiwatepref.fileprovider",
-                destinationFile
-            )
-            
-            // UCropを使用してトリミング画面を起動（ヘッダーは横長）
-            val uCropIntent = UCrop.of(sourceUri, destinationUri)
-                .withAspectRatio(16f, 9f) // 横長（16:9）
-                .withMaxResultSize(1200, 675) // 最大サイズ
-                .getIntent(context)
-            
-            cropImageLauncher.launch(uCropIntent)
-        }
-    }
 
     // ページ管理（0: 基本情報、1: 詳細情報）
     val pagerState = rememberPagerState(pageCount = { 2 })

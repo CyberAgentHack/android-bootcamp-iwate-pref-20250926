@@ -35,4 +35,30 @@ sealed interface ProfileRoutes {
      */
     @Serializable
     data object Settings : ProfileRoutes
+    
+    /**
+     * QRコード表示画面
+     */
+    @Serializable
+    data object QRCodeDisplay : ProfileRoutes
+    
+    /**
+     * QRコードスキャン画面
+     */
+    @Serializable
+    data object QRCodeScanner : ProfileRoutes
+    
+    /**
+     * 名刺ホルダー画面（受け取った名刺一覧）
+     */
+    @Serializable
+    data object CardHolder : ProfileRoutes
+    
+    /**
+     * 名刺詳細画面
+     * 
+     * @param cardIndex 名刺ホルダー内のインデックス
+     */
+    @Serializable
+    data class CardDetail(val cardIndex: Int) : ProfileRoutes
 }

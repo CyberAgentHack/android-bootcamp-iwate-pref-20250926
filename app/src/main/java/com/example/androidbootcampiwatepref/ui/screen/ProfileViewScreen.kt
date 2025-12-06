@@ -52,14 +52,11 @@ fun ProfileViewScreen(
     profileData: ProfileData,
     profileImageUri: String?,
     profileImageOriginalUri: String?,
-    headerImageUri: String?,
-    useDarkTheme: Boolean,
-    currentFont: com.example.androidbootcampiwatepref.domain.model.AppFont,
     currentCardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
-    onThemeToggle: () -> Unit,
-    onFontToggle: () -> Unit,
     onEditClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onQRCodeClick: () -> Unit,
+    onCardHolderClick: () -> Unit
 ) {
     // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
@@ -86,8 +83,9 @@ fun ProfileViewScreen(
             profileData = profileData,
             profileImageUri = profileImageUri,
             profileImageOriginalUri = profileImageOriginalUri,
-            headerImageUri = headerImageUri,
-            cardDesign = currentCardDesign
+            cardDesign = currentCardDesign,
+            onQRCodeClick = onQRCodeClick,
+            onCardHolderClick = onCardHolderClick
         )
     }
 }
@@ -108,8 +106,9 @@ fun ProfileViewContent(
     profileData: ProfileData,
     profileImageUri: String?,
     profileImageOriginalUri: String?,
-    headerImageUri: String?,
-    cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign
+    cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
+    onQRCodeClick: () -> Unit,
+    onCardHolderClick: () -> Unit
 ) {
     // カードの表裏状態を管理
     var isFlipped by remember { mutableStateOf(false) }
@@ -134,13 +133,34 @@ fun ProfileViewContent(
     val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
 
     // 中央に配置
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // QRコードと名刺ホルダーボタン
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = onQRCodeClick,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("QRコード表示")
+            }
+            
+            Button(
+                onClick = onCardHolderClick,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("名刺ホルダー")
+            }
+        }
+        
         // 名刺カード（表裏反転）
         Card(
             modifier = Modifier

@@ -2,14 +2,26 @@
 
 ## 📱 機能
 
+### 🎴 名刺機能
 - **名刺風デザイン** - プロフィールを名刺風のカードで表示（フリップアニメーション）
 - **6種類のカードデザイン** - Classic, Ocean, Sunset, Forest, Purple, Night から選択可能
 - **テキスト色の自動調整** - 各デザインに最適化された読みやすい文字色
 - **スライド編集** - カードをスワイプして表面・裏面を編集
+
+### 📲 QRコード名刺交換
+- **QRコード生成** - 自分の名刺をQRコードに変換して表示
+- **QRコードスキャン** - カメラでQRコードを読み取って名刺を受信
+- **名刺ホルダー** - 受け取った名刺を一覧で管理
+- **名刺詳細表示** - 受け取った名刺をフリップアニメーションで閲覧
+- **オフライン交換** - インターネット接続不要で名刺交換可能
+
+### ✏️ プロフィール編集
 - **プロフィール編集** - ニックネーム、自己紹介、性別、生年月日、趣味の編集
-- **カスタム画像** - 端末から画像を選択してプロフィールアイコンとヘッダーに設定
+- **カスタム画像** - 端末から画像を選択してプロフィールアイコンに設定
 - **画像トリミング** - UCropライブラリによる高度な画像切り抜き機能
-- **データ永続化** - DataStoreによるローカルデータ保存（画像URI、選択デザインも含む）
+
+### ⚙️ システム機能
+- **データ永続化** - DataStoreによるローカルデータ保存（プロフィール、受け取った名刺、選択デザイン）
 - **ダークモード対応** - ライト/ダーク/システム設定に対応
 - **画面遷移** - Navigation Composeによる滑らかな画面遷移
 
@@ -21,24 +33,33 @@
 app/src/main/java/com/example/androidbootcampiwatepref/
 ├── MainActivity.kt                    # メインアクティビティ
 ├── data/
-│   └── ProfileDataStore.kt           # データ永続化層
+│   └── ProfileDataStore.kt           # データ永続化層（プロフィール、名刺ホルダー）
 ├── domain/
 │   └── model/
 │       ├── AppTheme.kt               # テーマEnum
+│       ├── AppFont.kt                # フォントEnum
 │       ├── CardDesign.kt             # カードデザインEnum（6種類）
-│       └── ProfileData.kt            # プロフィールデータモデル
+│       ├── ProfileData.kt            # プロフィールデータモデル
+│       └── BusinessCardData.kt       # 名刺データモデル（QRコード用）
 ├── navigation/
 │   └── ProfileRoutes.kt              # ナビゲーションルート定義
 ├── ui/
 │   ├── component/
 │   │   ├── ProfileHeader.kt         # ヘッダーコンポーネント
-│   │   └── ProfileInfoRow.kt        # 情報行コンポーネント
+│   │   ├── ProfileInfoRow.kt        # 情報行コンポーネント
+│   │   └── ImageViewerDialog.kt     # 画像拡大表示ダイアログ
 │   ├── screen/
 │   │   ├── ProfileViewScreen.kt     # 閲覧画面（名刺風デザイン）
 │   │   ├── ProfileEditScreen.kt     # 編集画面（スライド式）
-│   │   └── SettingsScreen.kt        # 設定画面（テーマ、フォント、カードデザイン）
+│   │   ├── SettingsScreen.kt        # 設定画面（テーマ、フォント、カードデザイン）
+│   │   ├── QRCodeDisplayScreen.kt   # QRコード表示画面
+│   │   ├── QRCodeScannerScreen.kt   # QRコードスキャン画面
+│   │   ├── CardHolderScreen.kt      # 名刺ホルダー画面
+│   │   └── CardDetailScreen.kt      # 名刺詳細画面
 │   └── theme/
 │       └── AndroidBootcampIwatePrefTheme.kt
+├── util/
+│   └── QRCodeGenerator.kt            # QRコード生成ユーティリティ
 ```
 
 ## 🛠️ 技術スタック
@@ -49,6 +70,8 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 - **データ永続化**: DataStore (Preferences)
 - **非同期処理**: Kotlin Coroutines & Flow
 - **画像処理**: Coil (画像読み込み), UCrop (トリミング)
+- **QRコード**: ZXing (生成), MLKit Barcode Scanning (読み取り)
+- **カメラ**: CameraX (プレビュー、画像解析)
 - **ビルドツール**: Gradle (Kotlin DSL)
 
 ### 主要な依存関係
@@ -70,6 +93,15 @@ implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 // 画像処理
 implementation("io.coil-kt:coil-compose:2.5.0")  // 画像読み込み
 implementation("com.github.yalantis:ucrop:2.2.8")  // 画像トリミング
+
+// QRコード
+implementation("com.google.zxing:core:3.5.3")  // QRコード生成
+implementation("com.google.mlkit:barcode-scanning:17.3.0")  // QRコード読み取り
+
+// カメラ
+implementation("androidx.camera:camera-camera2:1.3.4")  // CameraX
+implementation("androidx.camera:camera-lifecycle:1.3.4")
+implementation("androidx.camera:camera-view:1.3.4")
 
 // UI拡張
 implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPager

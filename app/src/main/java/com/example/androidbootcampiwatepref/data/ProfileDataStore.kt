@@ -50,6 +50,7 @@ class ProfileDataStore(private val context: Context) {
         private val PROFILE_IMAGE_URI_KEY = stringPreferencesKey("profile_image_uri") // プロフィール画像URI（トリミング済み）
         private val PROFILE_IMAGE_ORIGINAL_URI_KEY = stringPreferencesKey("profile_image_original_uri") // プロフィール画像の元画像URI
         private val HEADER_IMAGE_URI_KEY = stringPreferencesKey("header_image_uri")   // ヘッダー画像URI
+        private val SAVED_CARDS_KEY = stringPreferencesKey("saved_business_cards")    // 受け取った名刺リスト（JSON配列）
     }
     
     // --- ニックネーム関連 ---
@@ -352,6 +353,43 @@ class ProfileDataStore(private val context: Context) {
     val cardDesignFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[CARD_DESIGN_KEY] ?: "CLASSIC"
     }
+    
+    // --- 名刺ホルダー関連 ---
+    
+    /**
+     * 受け取った名刺を保存
+     * 
+     * @param cards 名刺データのリスト
+     */
+    suspend fun saveSavedCards(cards: List<com.example.androidbootcampiwatepref.domain.model.BusinessCardData>) {
+        val json = kotlinx.serialization.json.Json.encodeToString(
+            kotlinx.serialization.builtins.ListSerializer(
+                com.example.androidbootcampiwatepref.domain.model.BusinessCardData.serializer()
+            ),
+            cards
+        )
+        context.dataStore.edit { preferences ->
+            preferences[SAVED_CARDS_KEY] = json
+        }
+    }
+    
+    /**
+     * 受け取った名刺のリストを取得（Flow）
+     */
+    val savedCardsFlow: Flow<List<com.example.androidbootcampiwatepref.domain.model.BusinessCardData>> = 
+        context.dataStore.data.map { preferences ->
+            val json = preferences[SAVED_CARDS_KEY] ?: "[]"
+            try {
+                kotlinx.serialization.json.Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(
+                        com.example.androidbootcampiwatepref.domain.model.BusinessCardData.serializer()
+                    ),
+                    json
+                )
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
     
     /**
      * すべてのデータをクリア
