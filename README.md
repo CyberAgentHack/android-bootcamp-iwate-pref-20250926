@@ -19,25 +19,28 @@
 - **プロフィール編集** - ニックネーム、自己紹介、性別、生年月日、趣味の編集
 - **カスタム画像** - 端末から画像を選択してプロフィールアイコンに設定
 - **画像トリミング** - UCropライブラリによる高度な画像切り抜き機能
+- **保存ボタン改善** - TopAppBarに配置され、常に表示
 
 ### ⚙️ システム機能
+- **スプラッシュ画面** - 名刺交換をイメージした2枚カードのアニメーション
 - **データ永続化** - DataStoreによるローカルデータ保存（プロフィール、受け取った名刺、選択デザイン）
+- **MVVM設計** - ViewModelによる状態管理とビジネスロジック分離
 - **ダークモード対応** - ライト/ダーク/システム設定に対応
-- **画面遷移** - Navigation Composeによる滑らかな画面遷移
+- **画面遷移** - Navigation Composeによる滑らかな画面遷移（タブ切替時の方向制御）
 
 ## 🏗️ アーキテクチャ
 
-このプロジェクトは、保守性と可読性を重視した構造になっています。
+このプロジェクトは、保守性と可読性を重視したMVVM（Model-View-ViewModel）アーキテクチャを採用しています。
 
 ```
 app/src/main/java/com/example/androidbootcampiwatepref/
-├── MainActivity.kt                    # メインアクティビティ
+├── MainActivity.kt                    # メインアクティビティ（エントリーポイント）
 ├── data/
 │   └── ProfileDataStore.kt           # データ永続化層（プロフィール、名刺ホルダー）
 ├── domain/
 │   └── model/
 │       ├── AppTheme.kt               # テーマEnum
-│       ├── AppFont.kt                # フォントEnum
+│       ├── AppFont.kt                # フォントEnum（FontFamilyプロパティ付き）
 │       ├── CardDesign.kt             # カードデザインEnum（6種類）
 │       ├── ProfileData.kt            # プロフィールデータモデル
 │       └── BusinessCardData.kt       # 名刺データモデル（QRコード用）
@@ -48,7 +51,10 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 │   │   ├── ProfileHeader.kt         # ヘッダーコンポーネント
 │   │   ├── ProfileInfoRow.kt        # 情報行コンポーネント
 │   │   └── ImageViewerDialog.kt     # 画像拡大表示ダイアログ
+│   ├── navigation/
+│   │   └── AppNavigationGraph.kt    # ナビゲーショングラフ（画面遷移・アニメーション）
 │   ├── screen/
+│   │   ├── SplashScreen.kt          # スプラッシュ画面（カードアニメーション）
 │   │   ├── ProfileViewScreen.kt     # 閲覧画面（名刺風デザイン）
 │   │   ├── ProfileEditScreen.kt     # 編集画面（スライド式）
 │   │   ├── SettingsScreen.kt        # 設定画面（テーマ、フォント、カードデザイン）
@@ -56,11 +62,20 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 │   │   ├── QRCodeScannerScreen.kt   # QRコードスキャン画面
 │   │   ├── CardHolderScreen.kt      # 名刺ホルダー画面
 │   │   └── CardDetailScreen.kt      # 名刺詳細画面
+│   ├── viewmodel/
+│   │   └── MainViewModel.kt         # メインViewModel（状態管理・ビジネスロジック）
 │   └── theme/
 │       └── AndroidBootcampIwatePrefTheme.kt
 ├── util/
 │   └── QRCodeGenerator.kt            # QRコード生成ユーティリティ
 ```
+
+### アーキテクチャの特徴
+
+- **MVVM採用**: ViewModelによる状態管理とビジネスロジックの分離
+- **レイヤー分離**: UI、ViewModel、Data層の明確な責務分離
+- **リアクティブプログラミング**: StateFlowによる状態監視とUI自動更新
+- **スプラッシュ画面**: DataStore読み込み中の遅延を隠蔽する名刺風アニメーション
 
 ## 🛠️ 技術スタック
 
@@ -192,41 +207,62 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
   - **Purple** - パープル系のグラデーション
   - **Night** - ダークグレーのグラデーション
 
-## 🎨 DataStoreの活用
+## 🎨 DataStore + ViewModel の活用
+
+### DataStoreによる永続化
 
 このアプリでは、AndroidのDataStore (Preferences)を使用してデータを永続化しています。
 
-### DataStoreでできること
-
+**DataStoreでできること:**
 - ✅ **キー・バリューペアの保存** - シンプルなデータの保存
 - ✅ **非同期処理** - UIをブロックしない安全な読み書き
 - ✅ **型安全** - コンパイル時の型チェック
 - ✅ **トランザクション** - データの整合性を保証
 
-### 実装例
+### ViewModelによる状態管理
+
+`MainViewModel`がDataStoreからのデータ読み込みと状態管理を担当:
 
 ```kotlin
-// データの保存
-suspend fun saveNickname(nickname: String) {
-    context.dataStore.edit { preferences ->
-        preferences[NICKNAME_KEY] = nickname
-    }
-}
-
-// データの読み込み
-val nicknameFlow: Flow<String> = context.dataStore.data.map { preferences ->
-    preferences[NICKNAME_KEY] ?: ""
+class MainViewModel(private val profileDataStore: ProfileDataStore) : ViewModel() {
+    // DataStoreから各種データを購読
+    val nickname = profileDataStore.nicknameFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = "未設定"
+    )
+    
+    // 計算プロパティによる状態の派生
+    val profileData: StateFlow<ProfileData> = combine(
+        nickname, bio, genderIndex, birthDateMillis, hobbies
+    ) { ... }.stateIn(...)
 }
 ```
 
+**利点:**
+- UIから状態管理ロジックを分離
+- StateFlowによる自動的なUI更新
+- ライフサイクル対応のデータ購読
+- テスタビリティの向上
+
 ## 🏛️ 設計パターン
+
+### MVVMアーキテクチャ
+
+このアプリは **MVVM (Model-View-ViewModel)** パターンを採用しています:
+
+- **View** (`ui/screen/`): Jetpack Composeによる宣言的UI
+- **ViewModel** (`ui/viewmodel/`): 状態管理とビジネスロジック
+  - `MainViewModel`: DataStoreからのデータ読み込み、StateFlowによるリアクティブな状態管理
+- **Model** (`domain/model/`, `data/`): データモデルと永続化層
 
 ### レイヤー分離
 
 - **UI層** (`ui/`): Jetpack Composeによる画面構築
-- **ドメイン層** (`domain/`): ビジネスロジックとモデル
+- **ViewModel層** (`ui/viewmodel/`): 状態管理とビジネスロジック
+- **ドメイン層** (`domain/`): ビジネスルールとモデル
 - **データ層** (`data/`): データの永続化と取得
-- **ナビゲーション層** (`navigation/`): 画面遷移の管理
+- **ナビゲーション層** (`ui/navigation/`): 画面遷移の管理とアニメーション設定
 
 ### コンポーネントの再利用
 

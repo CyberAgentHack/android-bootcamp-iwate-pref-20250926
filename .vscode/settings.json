@@ -3,14 +3,24 @@
     "cSpell.words": [
         "androidbootcampiwatepref",
         "androidx",
+        "ARGB",
+        "Backpressure",
+        "barcodes",
         "Bootcamp",
         "Drawables",
+        "fileprovider",
         "gradlew",
         "hedder",
         "Iwate",
         "Jetpack",
         "kotlinx",
         "KTIJ",
-        "proguard"
+        "mlkit",
+        "proguard",
+        "qrcode",
+        "ucrop",
+        "viewinterop",
+        "yalantis",
+        "zxing"
     ]
 }

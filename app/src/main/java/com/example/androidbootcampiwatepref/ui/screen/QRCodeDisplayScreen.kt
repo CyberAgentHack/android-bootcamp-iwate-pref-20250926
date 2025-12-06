@@ -68,7 +68,7 @@ fun QRCodeDisplayScreen(
                 actions = {
                     IconButton(onClick = onNavigateToScanner) {
                         Icon(
-                            imageVector = Icons.Default.Search,
+                            imageVector = Icons.Default.QrCodeScanner,
                             contentDescription = "QRスキャン"
                         )
                     }

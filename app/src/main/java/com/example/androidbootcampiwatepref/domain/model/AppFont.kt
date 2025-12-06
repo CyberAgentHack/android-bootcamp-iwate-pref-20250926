@@ -1,5 +1,7 @@
 package com.example.androidbootcampiwatepref.domain.model
 
+import androidx.compose.ui.text.font.FontFamily
+
 /**
  * アプリのフォント設定を表すEnum
  * 
@@ -10,9 +12,9 @@ package com.example.androidbootcampiwatepref.domain.model
  * @property MONOSPACE 等幅フォント（Monospace）
  * @property CURSIVE 筆記体風（Cursive）
  */
-enum class AppFont {
-    DEFAULT,
-    SERIF,
-    MONOSPACE,
-    CURSIVE
+enum class AppFont(val fontFamily: FontFamily) {
+    DEFAULT(FontFamily.Default),
+    SERIF(FontFamily.Serif),
+    MONOSPACE(FontFamily.Monospace),
+    CURSIVE(FontFamily.Cursive)
 }

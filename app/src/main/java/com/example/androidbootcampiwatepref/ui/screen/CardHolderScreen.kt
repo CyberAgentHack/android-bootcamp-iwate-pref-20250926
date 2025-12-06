@@ -47,15 +47,6 @@ fun CardHolderScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                },
-                navigationIcon = {
-                    // 左上の戻るボタン
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "戻る"
-                        )
-                    }
                 }
             )
         }

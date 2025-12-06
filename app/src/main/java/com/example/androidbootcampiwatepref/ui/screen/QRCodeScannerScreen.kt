@@ -199,21 +199,93 @@ private fun CameraPreview(
                 .padding(48.dp),
             contentAlignment = Alignment.Center
         ) {
-            Card(
-                modifier = Modifier.size(280.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
-                )
+            // ガイドライン枠（四隅に角マーク）
+            Box(
+                modifier = Modifier.size(280.dp)
             ) {
+                // 半透明の背景
+                androidx.compose.foundation.Canvas(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val cornerLength = 40f
+                    val strokeWidth = 8f
+                    val color = androidx.compose.ui.graphics.Color.White
+                    
+                    // 左上の角
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset(cornerLength, 0f),
+                        strokeWidth = strokeWidth
+                    )
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        end = androidx.compose.ui.geometry.Offset(0f, cornerLength),
+                        strokeWidth = strokeWidth
+                    )
+                    
+                    // 右上の角
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(size.width, 0f),
+                        end = androidx.compose.ui.geometry.Offset(size.width - cornerLength, 0f),
+                        strokeWidth = strokeWidth
+                    )
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(size.width, 0f),
+                        end = androidx.compose.ui.geometry.Offset(size.width, cornerLength),
+                        strokeWidth = strokeWidth
+                    )
+                    
+                    // 左下の角
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(0f, size.height),
+                        end = androidx.compose.ui.geometry.Offset(cornerLength, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(0f, size.height),
+                        end = androidx.compose.ui.geometry.Offset(0f, size.height - cornerLength),
+                        strokeWidth = strokeWidth
+                    )
+                    
+                    // 右下の角
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(size.width, size.height),
+                        end = androidx.compose.ui.geometry.Offset(size.width - cornerLength, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                    drawLine(
+                        color = color,
+                        start = androidx.compose.ui.geometry.Offset(size.width, size.height),
+                        end = androidx.compose.ui.geometry.Offset(size.width, size.height - cornerLength),
+                        strokeWidth = strokeWidth
+                    )
+                }
+                
+                // 中央のテキスト
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Text(
-                        text = "QRコードをここに合わせてください",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Card(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                        )
+                    ) {
+                        Text(
+                            text = "QRコードをここに合わせてください",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
                 }
             }
         }

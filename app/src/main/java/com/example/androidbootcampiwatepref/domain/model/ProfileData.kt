@@ -13,9 +13,9 @@ package com.example.androidbootcampiwatepref.domain.model
  * @property hobbies 趣味のリスト（デフォルトは空リスト）
  */
 data class ProfileData(
-    val nickname: String,
-    val bio: String,
-    val genderIndex: Int,
-    val birthDateMillis: Long?,
+    val nickname: String = "未設定",
+    val bio: String = "",
+    val genderIndex: Int = 0,
+    val birthDateMillis: Long? = DEFAULT_BIRTH_DATE_MILLIS,
     val hobbies: List<String> = emptyList()
 )

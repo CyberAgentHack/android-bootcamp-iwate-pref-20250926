@@ -70,6 +70,12 @@ fun ProfileEditScreen(
     onBackClick: () -> Unit,
     onSaveClick: (ProfileData, String?, String?, String?) -> Unit
 ) {
+    // 保存用の状態を管理
+    var tempProfileData by remember { mutableStateOf(profileData) }
+    var tempProfileImageUri by remember { mutableStateOf(profileImageUri) }
+    var tempProfileImageOriginalUri by remember { mutableStateOf<String?>(null) }
+    var tempHeaderImageUri by remember { mutableStateOf(headerImageUri) }
+    
     // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
         topBar = {
@@ -80,6 +86,21 @@ fun ProfileEditScreen(
                     // 戻るボタン（編集をキャンセル）
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "キャンセル")
+                    }
+                },
+                actions = {
+                    // 保存ボタン
+                    TextButton(
+                        onClick = {
+                            onSaveClick(
+                                tempProfileData,
+                                tempProfileImageUri,
+                                tempProfileImageOriginalUri,
+                                tempHeaderImageUri
+                            )
+                        }
+                    ) {
+                        Text("保存")
                     }
                 }
             )
@@ -92,7 +113,12 @@ fun ProfileEditScreen(
             initialProfileImageUri = profileImageUri,
             initialHeaderImageUri = headerImageUri,
             cardDesign = currentCardDesign,
-            onSaveClick = onSaveClick
+            onDataChange = { data, profUri, profOrigUri, headUri ->
+                tempProfileData = data
+                tempProfileImageUri = profUri
+                tempProfileImageOriginalUri = profOrigUri
+                tempHeaderImageUri = headUri
+            }
         )
     }
 }
@@ -115,7 +141,7 @@ fun ProfileEditContent(
     initialProfileImageUri: String?,
     initialHeaderImageUri: String?,
     cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
-    onSaveClick: (ProfileData, String?, String?, String?) -> Unit
+    onDataChange: (ProfileData, String?, String?, String?) -> Unit
 ) {
     val context = LocalContext.current
     // --- 状態変数の定義 ---
@@ -191,23 +217,43 @@ fun ProfileEditContent(
 
     // ページ管理（0: 基本情報、1: 詳細情報）
     val pagerState = rememberPagerState(pageCount = { 2 })
+    
+    // 初回スキップ用のフラグ
+    var isFirstComposition by remember { mutableStateOf(true) }
+    
+    // データ変更を通知（初回はスキップ）
+    LaunchedEffect(nickname.text, bio.text, selectedGenderIndex, selectedDateMillis, hobbies.toList(), currentProfileImageUri, currentHeaderImageUri) {
+        if (isFirstComposition) {
+            isFirstComposition = false
+        } else {
+            val updatedData = ProfileData(
+                nickname = nickname.text,
+                bio = bio.text,
+                genderIndex = selectedGenderIndex,
+                birthDateMillis = selectedDateMillis,
+                hobbies = hobbies
+            )
+            onDataChange(updatedData, currentProfileImageUri, currentProfileImageOriginalUri, currentHeaderImageUri)
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // 名刺カード（スライド切り替え）
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.63f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.63f),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -279,23 +325,6 @@ fun ProfileEditContent(
                         }
                 )
             }
-        }
-        
-        // 保存ボタン（名刺の外側）
-        Button(
-            onClick = {
-                val updatedData = ProfileData(
-                    nickname = nickname.text,
-                    bio = bio.text,
-                    genderIndex = selectedGenderIndex,
-                    birthDateMillis = selectedDateMillis,
-                    hobbies = hobbies
-                )
-                onSaveClick(updatedData, currentProfileImageUri, currentProfileImageOriginalUri, currentHeaderImageUri)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("保存")
         }
     }
     
