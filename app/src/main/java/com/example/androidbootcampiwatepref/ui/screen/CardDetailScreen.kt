@@ -4,9 +4,11 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -15,8 +17,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
 
@@ -125,7 +130,7 @@ fun CardDetailScreen(
 /**
  * 受け取った名刺の表面表示
  *
- * ニックネームと自己紹介を中央に大きく表示
+ * プロフィール画像、ニックネーム、自己紹介を中央に大きく表示
  * シンプルで読みやすいレイアウト
  */
 @Composable
@@ -146,6 +151,39 @@ private fun ReceivedCardFront(
             verticalArrangement = Arrangement.Center,  // 縦方向中央
             horizontalAlignment = Alignment.CenterHorizontally  // 横方向中央
         ) {
+            // プロフィール画像（アイコン）
+            if (!card.profileImageUri.isNullOrEmpty()) {
+                AsyncImage(
+                    model = card.profileImageUri,
+                    contentDescription = "プロフィール画像",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // デフォルトアイコン（画像がない場合）
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(cardDesign.frontTextColor.copy(alpha = 0.2f))
+                        .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "デフォルトアイコン",
+                        modifier = Modifier.size(60.dp),
+                        tint = cardDesign.frontTextColor.copy(alpha = 0.7f)
+                    )
+                }
+            }
+            
+            // 間隔
+            Spacer(modifier = Modifier.height(24.dp))
+            
             // ニックネーム（大きめの表示）
             Text(
                 text = card.nickname,

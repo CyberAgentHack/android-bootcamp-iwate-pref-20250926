@@ -15,7 +15,8 @@ data class BusinessCardData(
     val gender: String,
     val birthDate: String?, // "yyyy-MM-dd" 形式
     val hobbies: List<String> = emptyList(),
-    val cardDesign: String = "CLASSIC"
+    val cardDesign: String = "CLASSIC",
+    val profileImageUri: String? = null
 ) {
     /**
      * JSONにシリアライズ
@@ -45,7 +46,8 @@ data class BusinessCardData(
             genderIndex: Int,
             birthDateMillis: Long?,
             hobbies: List<String>,
-            cardDesign: String
+            cardDesign: String,
+            profileImageUri: String? = null
         ): BusinessCardData {
             // 性別インデックスを文字列に変換（共通定数を使用）
             val genderText = GenderOption.fromIndex(genderIndex).label
@@ -64,7 +66,8 @@ data class BusinessCardData(
                 gender = genderText,
                 birthDate = birthDateText,
                 hobbies = hobbies,
-                cardDesign = cardDesign
+                cardDesign = cardDesign,
+                profileImageUri = profileImageUri
             )
         }
     }

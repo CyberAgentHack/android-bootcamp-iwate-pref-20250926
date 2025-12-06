@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,6 +69,10 @@ fun ProfileViewScreen(
             TopAppBar(
                 title = { Text("プロフィール") },
                 actions = {
+                    // QRコード表示ボタン
+                    IconButton(onClick = onQRCodeClick) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = "QRコード表示")
+                    }
                     // 編集ボタン
                     IconButton(onClick = onEditClick) {
                         Icon(Icons.Default.Edit, contentDescription = "編集")

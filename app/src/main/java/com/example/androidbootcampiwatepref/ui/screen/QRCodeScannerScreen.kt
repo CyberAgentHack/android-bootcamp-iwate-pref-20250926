@@ -1,7 +1,10 @@
 package com.example.androidbootcampiwatepref.ui.screen
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +54,9 @@ fun QRCodeScannerScreen(
         )
     }
     
+    // 権限リクエスト完了フラグ（権限ダイアログが表示されたかどうか）
+    var permissionRequested by remember { mutableStateOf(false) }
+    
     // カメラ権限リクエスト用のランチャーを作成
     // ActivityResultContracts.RequestPermission()でシステムの権限ダイアログを表示
     val launcher = rememberLauncherForActivityResult(
@@ -58,6 +64,7 @@ fun QRCodeScannerScreen(
     ) { isGranted ->
         // 権限が許可されたかどうかの結果を受け取り、状態を更新
         hasCameraPermission = isGranted
+        permissionRequested = true
     }
     
     // 画面初回表示時に実行される副作用
@@ -65,6 +72,32 @@ fun QRCodeScannerScreen(
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             launcher.launch(Manifest.permission.CAMERA)
+        }
+    }
+    
+    // ライフサイクルオーナーを取得
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // 画面が再開（Resume）された時に権限を再チェック
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                // 設定画面から戻ってきた時に権限状態を再確認
+                val currentPermission = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+                
+                if (currentPermission != hasCameraPermission) {
+                    hasCameraPermission = currentPermission
+                }
+            }
+        }
+        
+        lifecycleOwner.lifecycle.addObserver(observer)
+        
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
     
@@ -84,16 +117,47 @@ fun QRCodeScannerScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(32.dp)
                 ) {
+                    // カメラアイコン
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    
                     // カメラ権限が必要であることを説明するテキスト
                     Text(
                         text = "カメラの権限が必要です",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleLarge
                     )
-                    // 権限リクエストを再実行するボタン
-                    Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
-                        Text("権限を許可")
+                    Text(
+                        text = "QRコードをスキャンするには、設定画面でカメラへのアクセスを許可してください",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // 設定画面へ遷移するボタン
+                    Button(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("アプリ設定を開く")
                     }
                 }
             }

@@ -182,6 +182,7 @@ fun AppNavigationGraph(
                     birthDateMillis = profileData.birthDateMillis,
                     hobbies = profileData.hobbies,
                     cardDesign = currentCardDesign.name,
+                    profileImageUri = profileImageUri,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToScanner = { navController.navigate(ProfileRoutes.QRCodeScanner) }
                 )

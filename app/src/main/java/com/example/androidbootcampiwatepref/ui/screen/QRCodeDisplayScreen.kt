@@ -33,18 +33,22 @@ fun QRCodeDisplayScreen(
     birthDateMillis: Long?,
     hobbies: List<String>,
     cardDesign: String,
+    profileImageUri: String?,
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit
 ) {
     // プロフィールデータから名刺データを生成
     // JSONにシリアライズしてQRコードに埋め込む準備
+    // 注意: profileImageUriはローカルファイルパスなので、QRコードには含めない
+    // 他の端末では読み込めないため、null を渡す
     val businessCardData = BusinessCardData.fromProfileData(
         nickname = nickname,
         bio = bio,
         genderIndex = genderIndex,
         birthDateMillis = birthDateMillis,
         hobbies = hobbies,
-        cardDesign = cardDesign
+        cardDesign = cardDesign,
+        profileImageUri = null  // QRコードには画像URIを含めない
     )
     
     // 名刺データをJSON化してQRコード画像を生成

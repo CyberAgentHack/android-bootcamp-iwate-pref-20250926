@@ -1,10 +1,12 @@
 package com.example.androidbootcampiwatepref.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -12,9 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
 
@@ -139,7 +144,7 @@ private fun BusinessCardItem(
                 .fillMaxSize()
                 .background(brush = cardDesign.frontBrush)  // デザイン固有のグラデーション
         ) {
-            // Row：左に名刺情報、右に削除ボタンを配置
+            // Row：左にアイコンと名刺情報、右に削除ボタンを配置
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -147,6 +152,38 @@ private fun BusinessCardItem(
                 horizontalArrangement = Arrangement.SpaceBetween,  // 左右に分けて配置
                 verticalAlignment = Alignment.CenterVertically  // 上下中央揃え
             ) {
+                // プロフィール画像（アイコン）
+                if (!card.profileImageUri.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = card.profileImageUri,
+                        contentDescription = "プロフィール画像",
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // デフォルトアイコン（画像がない場合）
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(cardDesign.frontTextColor.copy(alpha = 0.2f))
+                            .border(2.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "デフォルトアイコン",
+                            modifier = Modifier.size(36.dp),
+                            tint = cardDesign.frontTextColor.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
                 // 左側：名刺の主要情報（ニックネーム、自己紹介、性別、生年月日）
                 Column(
                     modifier = Modifier.weight(1f),  // 残りのスペースを使う
