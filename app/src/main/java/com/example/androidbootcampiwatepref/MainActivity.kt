@@ -22,20 +22,25 @@ import java.util.Calendar
 
 /**
  * メインアクティビティ
- * プロフィール画面のナビゲーションとDataStore統合を管理
+ * 
+ * このアクティビティは以下の責務を持つ:
+ * - プロフィール画面間のナビゲーション管理
+ * - DataStoreを使用したデータの永続化
+ * - テーマ設定の管理と保存
+ * - アプリ全体の状態管理
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // DataStoreインスタンスを作成
+        // DataStoreインスタンスを作成（データ永続化に使用）
         val profileDataStore = ProfileDataStore(this)
         
         setContent{
-            //状態管理
+            // 現在のテーマ設定を管理（SYSTEM/LIGHT/DARK）
             var currentTheme by remember { mutableStateOf(AppTheme.SYSTEM) }
 
-            //プロフィールデータ全体を管理
+            // プロフィールデータ全体を管理（初期値として空のデータを設定）
             var profileData by remember {
                 mutableStateOf(
                     ProfileData(
@@ -49,7 +54,13 @@ class MainActivity : ComponentActivity() {
                 )
             }
             
-            // DataStoreからデータを読み込む
+            /**
+             * DataStoreからデータを読み込む
+             * 
+             * LaunchedEffect(Unit)により、Composableの初回表示時に一度だけ実行される。
+             * combine関数で複数のFlowを結合し、いずれかの値が変更されたら
+             * 全てのデータを取得して状態を更新する。
+             */
             LaunchedEffect(Unit) {
                 combine(
                     profileDataStore.nicknameFlow,
@@ -83,42 +94,55 @@ class MainActivity : ComponentActivity() {
                     }
                 }.collect {}
             }
-            //システムがダークモードかどうかを取得
+            
+            // システムの現在のダークモード設定を取得
             val systemIsDark = isSystemInDarkTheme()
-            //実際にテーマに渡す
+            
+            // 実際に適用するテーマを決定
+            // SYSTEM: システム設定に従う、LIGHT: 強制ライト、DARK: 強制ダーク
             val useDarkTheme = when (currentTheme) {
                 AppTheme.SYSTEM -> systemIsDark
                 AppTheme.LIGHT -> false
                 AppTheme.DARK -> true
             }
+            
+            // アプリのテーマを適用
             AndroidBootcampIwatePrefTheme(darkTheme = useDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // ナビゲーションコントローラーを作成（画面遷移を管理）
                     val navController = rememberNavController()
 
+                    // ナビゲーショングラフを定義（開始画面はView画面）
                     NavHost(
                         navController = navController,
                         startDestination = ProfileRoutes.View
                     ) {
+                        // プロフィール閲覧画面の定義
                         composable<ProfileRoutes.View> {
                             ProfileViewScreen(
                                 profileData = profileData,
                                 useDarkTheme = useDarkTheme,
+                                // テーマ切り替えボタンが押された時の処理
                                 onThemeToggle = {
+                                    // 現在のテーマに応じて次のテーマに切り替え
                                     currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
-                                    // テーマ設定を保存
+                                    // 変更したテーマ設定をDataStoreに保存
                                     lifecycleScope.launch {
                                         profileDataStore.saveTheme(currentTheme.name)
                                     }
                                 },
+                                // 編集ボタンが押された時の処理
                                 onEditClick = {
+                                    // 編集画面に遷移
                                     navController.navigate(ProfileRoutes.Edit)
                                 }
                             )
                         }
 
+                        // プロフィール編集画面の定義
                         composable<ProfileRoutes.Edit> {
                             ProfileEditScreen(
                                 profileData = profileData,
@@ -130,12 +154,16 @@ class MainActivity : ComponentActivity() {
                                         profileDataStore.saveTheme(currentTheme.name)
                                     }
                                 },
+                                // 戻るボタンが押された時の処理
                                 onBackClick = {
+                                    // 前の画面に戻る（変更は保存されない）
                                     navController.popBackStack()
                                 },
+                                // 保存ボタンが押された時の処理
                                 onSaveClick = { updatedData ->
+                                    // アプリ内の状態を更新
                                     profileData = updatedData
-                                    // DataStoreに保存
+                                    // 変更したプロフィールデータをDataStoreに永続化
                                     lifecycleScope.launch {
                                         profileDataStore.saveProfileData(
                                             nickname = updatedData.nickname,
@@ -146,6 +174,7 @@ class MainActivity : ComponentActivity() {
                                             hobbies = updatedData.hobbies
                                         )
                                     }
+                                    // 閲覧画面に戻る
                                     navController.popBackStack()
                                 }
                             )

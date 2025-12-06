@@ -25,6 +25,18 @@ import java.util.Locale
 
 /**
  * プロフィール閲覧画面
+ * 
+ * ユーザーのプロフィール情報を表示する読み取り専用の画面
+ * 
+ * 主な機能:
+ * - プロフィール情報（ニックネーム、ID、性別、誕生日、自己紹介、趣味）の表示
+ * - 編集画面への遷移
+ * - テーマ切り替え（ライトモード/ダークモード）
+ * 
+ * @param profileData 表示するプロフィールデータ
+ * @param useDarkTheme ダークテーマを使用するかどうか
+ * @param onThemeToggle テーマ切り替えボタンのクリック処理
+ * @param onEditClick 編集ボタンのクリック処理
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,14 +46,18 @@ fun ProfileViewScreen(
     onThemeToggle: () -> Unit,
     onEditClick: () -> Unit
 ) {
+    // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
         topBar = {
+            // トップバー: タイトルと操作ボタンを配置
             TopAppBar(
                 title = { Text("プロフィール") },
                 actions = {
+                    // 編集ボタン
                     IconButton(onClick = onEditClick) {
                         Icon(Icons.Default.Edit, contentDescription = "編集")
                     }
+                    // テーマ切り替えボタン（現在のテーマに応じて絵文字を変更）
                     IconButton(onClick = onThemeToggle) {
                         Text(if (useDarkTheme) "☀️" else "🌙")
                     }
@@ -49,6 +65,7 @@ fun ProfileViewScreen(
             )
         }
     ) { innerPadding ->
+        // メインコンテンツの表示
         ProfileViewContent(
             innerPadding = innerPadding,
             profileData = profileData
@@ -58,42 +75,61 @@ fun ProfileViewScreen(
 
 /**
  * プロフィール閲覧画面のコンテンツ
+ * 
+ * プロフィール情報を表示する実際のUI部分
+ * スクロール可能なレイアウトで各項目を縦に並べて表示
+ * 
+ * @param innerPadding Scaffoldから渡されるPadding（システムバーを避けるため）
+ * @param profileData 表示するプロフィールデータ
  */
 @Composable
 fun ProfileViewContent(innerPadding: PaddingValues, profileData: ProfileData) {
+    // 性別の選択肢リスト
     val genderOptions = listOf("男性", "女性", "回答しない")
+    
+    // 日付フォーマッター（yyyy/MM/dd形式）
+    // rememberを使用してリコンポジション時に再生成されないようにする
     val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
 
+    // 縦スクロール可能なレイアウト
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState()), // スクロール可能にする
     ) {
+        // プロフィールヘッダー（プロフィール画像、ニックネーム、ID）
         ProfileHeader(nickname = profileData.nickname, id = profileData.id)
 
+        // プロフィール詳細情報
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp) // 各項目間のスペース
         ) {
-            // 各項目をラベルと値で表示
+            // 各項目をProfileInfoRowコンポーネントで表示
             ProfileInfoRow(label = "自己紹介", value = profileData.bio)
             ProfileInfoRow(label = "性別", value = genderOptions[profileData.genderIndex])
+            
+            // 生年月日（エポックミリ秒を日付文字列に変換）
             ProfileInfoRow(
                 label = "生年月日",
                 value = profileData.birthDateMillis?.let {
+                    // エポックミリ秒をDate型に変換してフォーマット
                     birthDateFormatter.format(Date(it))
-                } ?: "未設定"
+                } ?: "未設定" // nullの場合は"未設定"と表示
             )
 
             // 趣味・興味リスト
             Column(modifier = Modifier.fillMaxWidth()) {
+                // ラベル
                 Text(
                     text = "趣味・興味",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+                
+                // 趣味リストが空の場合の処理
                 if (profileData.hobbies.isEmpty()) {
                     Text(
                         text = "",
@@ -102,10 +138,12 @@ fun ProfileViewContent(innerPadding: PaddingValues, profileData: ProfileData) {
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 } else {
+                    // 趣味を横スクロール可能なリストで表示
                     LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp), // 各チップ間のスペース
                         contentPadding = PaddingValues(bottom = 8.dp)
                     ) {
+                        // 各趣味をチップ形式で表示
                         items(profileData.hobbies) { hobby ->
                             SuggestionChip(
                                 onClick = {},

@@ -24,6 +24,22 @@ import java.util.Locale
 
 /**
  * プロフィール編集画面
+ * 
+ * ユーザーがプロフィール情報を編集するための画面
+ * 
+ * 主な機能:
+ * - 各プロフィール項目の入力・編集
+ * - 性別の選択（ラジオボタン）
+ * - 誕生日の選択（DatePicker）
+ * - 趣味の追加・削除（動的リスト管理）
+ * - 入力内容の保存
+ * - テーマ切り替え
+ * 
+ * @param profileData 編集対象のプロフィールデータ（初期値として使用）
+ * @param useDarkTheme ダークテーマを使用するかどうか
+ * @param onThemeToggle テーマ切り替えボタンのクリック処理
+ * @param onBackClick 戻るボタンのクリック処理（編集をキャンセル）
+ * @param onSaveClick 保存ボタンのクリック処理（編集内容を保存）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,16 +50,20 @@ fun ProfileEditScreen(
     onBackClick: () -> Unit,
     onSaveClick: (ProfileData) -> Unit
 ) {
+    // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
         topBar = {
+            // トップバー: タイトルと操作ボタンを配置
             TopAppBar(
                 title = { Text("プロフィール編集") },
                 navigationIcon = {
+                    // 戻るボタン（編集をキャンセル）
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "キャンセル")
                     }
                 },
                 actions = {
+                    // テーマ切り替えボタン
                     IconButton(onClick = onThemeToggle) {
                         Text(if (useDarkTheme) "☀️" else "🌙")
                     }
@@ -51,6 +71,7 @@ fun ProfileEditScreen(
             )
         }
     ) { innerPadding ->
+        // メインコンテンツの表示
         ProfileEditContent(
             innerPadding = innerPadding,
             initialProfileData = profileData,
@@ -61,6 +82,13 @@ fun ProfileEditScreen(
 
 /**
  * プロフィール編集画面のコンテンツ
+ * 
+ * 各入力項目のUIと状態管理を担当
+ * 複雑な状態管理が必要なため、多くのrememberを使用
+ * 
+ * @param innerPadding Scaffoldから渡されるPadding
+ * @param initialProfileData 編集対象の初期データ
+ * @param onSaveClick 保存ボタンのクリック処理
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,15 +97,22 @@ fun ProfileEditContent(
     initialProfileData: ProfileData,
     onSaveClick: (ProfileData) -> Unit
 ) {
-    // 状態変数
+    // --- 状態変数の定義 ---
+    // TextFieldValueを使用してカーソル位置なども管理
     var nickname by remember { mutableStateOf(TextFieldValue(initialProfileData.nickname)) }
     var id by remember { mutableStateOf(TextFieldValue(initialProfileData.id)) }
     var bio by remember { mutableStateOf(TextFieldValue(initialProfileData.bio)) }
+    
+    // 性別関連
     val genderOptions = listOf("男性", "女性", "回答しない")
     var selectedGenderIndex by remember { mutableStateOf(initialProfileData.genderIndex) }
+    
+    // 誕生日関連
     var selectedDateMillis by remember { mutableStateOf(initialProfileData.birthDateMillis) }
     var showDatePickerDialog by remember { mutableStateOf(false) }
     val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
+    
+    // 趣味関連
     var hobbies by remember { mutableStateOf(initialProfileData.hobbies.toMutableList()) }
     var hobbyInput by remember { mutableStateOf(TextFieldValue("")) }
 
