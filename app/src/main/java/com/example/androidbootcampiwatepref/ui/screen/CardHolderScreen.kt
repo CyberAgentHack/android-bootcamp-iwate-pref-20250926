@@ -1,5 +1,6 @@
 package com.example.androidbootcampiwatepref.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,10 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
 
@@ -152,18 +153,10 @@ private fun BusinessCardItem(
                 horizontalArrangement = Arrangement.SpaceBetween,  // 左右に分けて配置
                 verticalAlignment = Alignment.CenterVertically  // 上下中央揃え
             ) {
-                // プロフィール画像（アイコン）
+                // プロフィール画像（アイコン） - デフォルトアイコンのみ
                 if (!card.profileImageUri.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = card.profileImageUri,
-                        contentDescription = "プロフィール画像",
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
+                    // 機能拡張用: 将来的に画像表示を追加可能
+                    // 現在はデフォルトアイコンを表示
                     // デフォルトアイコン（画像がない場合）
                     Box(
                         modifier = Modifier

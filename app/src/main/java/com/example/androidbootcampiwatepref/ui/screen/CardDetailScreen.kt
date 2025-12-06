@@ -3,6 +3,7 @@ package com.example.androidbootcampiwatepref.ui.screen
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,10 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
 
@@ -151,18 +152,10 @@ private fun ReceivedCardFront(
             verticalArrangement = Arrangement.Center,  // 縦方向中央
             horizontalAlignment = Alignment.CenterHorizontally  // 横方向中央
         ) {
-            // プロフィール画像（アイコン）
+            // プロフィール画像（アイコン） - デフォルトアイコンのみ
             if (!card.profileImageUri.isNullOrEmpty()) {
-                AsyncImage(
-                    model = card.profileImageUri,
-                    contentDescription = "プロフィール画像",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
+                // 機能拡張用: 将来的に画像表示を追加可能
+                // 現在はデフォルトアイコンを表示
                 // デフォルトアイコン（画像がない場合）
                 Box(
                     modifier = Modifier

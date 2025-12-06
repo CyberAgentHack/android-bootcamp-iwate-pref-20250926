@@ -10,13 +10,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.GenderOption
+import com.example.androidbootcampiwatepref.util.BusinessCardSharer
 import com.example.androidbootcampiwatepref.util.QRCodeGenerator
 
 /**
@@ -37,10 +40,12 @@ fun QRCodeDisplayScreen(
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit
 ) {
+    val context = LocalContext.current
+    
     // プロフィールデータから名刺データを生成
     // JSONにシリアライズしてQRコードに埋め込む準備
-    // 注意: profileImageUriはローカルファイルパスなので、QRコードには含めない
-    // 他の端末では読み込めないため、null を渡す
+    // 注意: 画像はQRコードに含めない（容量制限のため）
+    // 受信側ではデフォルトアイコンを表示
     val businessCardData = BusinessCardData.fromProfileData(
         nickname = nickname,
         bio = bio,
@@ -48,7 +53,7 @@ fun QRCodeDisplayScreen(
         birthDateMillis = birthDateMillis,
         hobbies = hobbies,
         cardDesign = cardDesign,
-        profileImageUri = null  // QRコードには画像URIを含めない
+        profileImageUri = null  // 画像は含めない
     )
     
     // 名刺データをJSON化してQRコード画像を生成
@@ -163,6 +168,38 @@ fun QRCodeDisplayScreen(
                     InfoRow(label = "デザイン", value = cardDesign)
                 }
             }
+            
+            // 共有ボタン
+            Button(
+                onClick = {
+                    BusinessCardSharer.shareBusinessCard(
+                        context = context,
+                        businessCardData = businessCardData,
+                        profileImageUri = profileImageUri
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("画像付きで共有（Android共有）")
+            }
+            
+            Text(
+                text = "※Android共有機能を使うと、画像も一緒に送信できます",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             
             Spacer(modifier = Modifier.height(16.dp))
         }
