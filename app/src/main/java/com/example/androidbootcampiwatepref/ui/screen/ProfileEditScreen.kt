@@ -5,6 +5,9 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
+import androidx.core.content.FileProvider
+import com.yalantis.ucrop.UCrop
+import java.io.File
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
@@ -132,35 +135,21 @@ fun ProfileEditContent(
     // 画像URI関連
     var currentProfileImageUri by remember { mutableStateOf(initialProfileImageUri) }
     var currentHeaderImageUri by remember { mutableStateOf(initialHeaderImageUri) }
-    var tempImageUri by remember { mutableStateOf<Uri?>(null) }
     var isSelectingProfileImage by remember { mutableStateOf(false) }
     
-    // トリミング用の一時URI（画像選択後、トリミング前の画像を保存）
-    val cropImageUri = remember {
-        Uri.parse("content://com.example.androidbootcampiwatepref.fileprovider/temp_crop_${System.currentTimeMillis()}.jpg")
-    }
-    
-    // 画像トリミングランチャー
+    // UCrop結果を受け取るランチャー
     val cropImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            // トリミング完了後の画像URIを保存
-            cropImageUri?.let { uri ->
-                try {
-                    // 永続的なアクセス権限を取得
-                    context.contentResolver.takePersistableUriPermission(
-                        uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (e: Exception) {
-                    // 権限取得失敗時はそのまま使用
-                }
-                
-                if (isSelectingProfileImage) {
-                    currentProfileImageUri = uri.toString()
-                } else {
-                    currentHeaderImageUri = uri.toString()
+            result.data?.let { intent ->
+                val resultUri = UCrop.getOutput(intent)
+                resultUri?.let { uri ->
+                    if (isSelectingProfileImage) {
+                        currentProfileImageUri = uri.toString()
+                    } else {
+                        currentHeaderImageUri = uri.toString()
+                    }
                 }
             }
         }
@@ -170,42 +159,24 @@ fun ProfileEditContent(
     val profileImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
+        uri?.let { sourceUri ->
             isSelectingProfileImage = true
-            tempImageUri = it
             
-            // トリミング画面を起動
-            val cropIntent = Intent("com.android.camera.action.CROP").apply {
-                setDataAndType(it, "image/*")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                
-                // トリミング設定
-                putExtra("crop", "true")
-                putExtra("aspectX", 1) // 正方形（1:1）
-                putExtra("aspectY", 1)
-                putExtra("outputX", 500) // 出力サイズ
-                putExtra("outputY", 500)
-                putExtra("scale", true)
-                putExtra("return-data", false)
-                putExtra("output", cropImageUri)
-                putExtra("outputFormat", android.graphics.Bitmap.CompressFormat.JPEG.toString())
-            }
+            // トリミング後の画像を保存するファイルを作成
+            val destinationFile = File(context.cacheDir, "cropped_profile_${System.currentTimeMillis()}.jpg")
+            val destinationUri = FileProvider.getUriForFile(
+                context,
+                "com.example.androidbootcampiwatepref.fileprovider",
+                destinationFile
+            )
             
-            try {
-                cropImageLauncher.launch(cropIntent)
-            } catch (e: Exception) {
-                // トリミングアプリがない場合は、そのまま使用
-                try {
-                    context.contentResolver.takePersistableUriPermission(
-                        it,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (ex: Exception) {
-                    // 権限取得失敗時はそのまま使用
-                }
-                currentProfileImageUri = it.toString()
-            }
+            // UCropを使用してトリミング画面を起動
+            val uCropIntent = UCrop.of(sourceUri, destinationUri)
+                .withAspectRatio(1f, 1f) // 正方形（1:1）
+                .withMaxResultSize(500, 500) // 最大サイズ
+                .getIntent(context)
+            
+            cropImageLauncher.launch(uCropIntent)
         }
     }
     
@@ -213,42 +184,24 @@ fun ProfileEditContent(
     val headerImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
+        uri?.let { sourceUri ->
             isSelectingProfileImage = false
-            tempImageUri = it
             
-            // トリミング画面を起動
-            val cropIntent = Intent("com.android.camera.action.CROP").apply {
-                setDataAndType(it, "image/*")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                
-                // トリミング設定（ヘッダーは横長）
-                putExtra("crop", "true")
-                putExtra("aspectX", 16) // 横長（16:9）
-                putExtra("aspectY", 9)
-                putExtra("outputX", 1200) // 出力サイズ
-                putExtra("outputY", 675)
-                putExtra("scale", true)
-                putExtra("return-data", false)
-                putExtra("output", cropImageUri)
-                putExtra("outputFormat", android.graphics.Bitmap.CompressFormat.JPEG.toString())
-            }
+            // トリミング後の画像を保存するファイルを作成
+            val destinationFile = File(context.cacheDir, "cropped_header_${System.currentTimeMillis()}.jpg")
+            val destinationUri = FileProvider.getUriForFile(
+                context,
+                "com.example.androidbootcampiwatepref.fileprovider",
+                destinationFile
+            )
             
-            try {
-                cropImageLauncher.launch(cropIntent)
-            } catch (e: Exception) {
-                // トリミングアプリがない場合は、そのまま使用
-                try {
-                    context.contentResolver.takePersistableUriPermission(
-                        it,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (ex: Exception) {
-                    // 権限取得失敗時はそのまま使用
-                }
-                currentHeaderImageUri = it.toString()
-            }
+            // UCropを使用してトリミング画面を起動（ヘッダーは横長）
+            val uCropIntent = UCrop.of(sourceUri, destinationUri)
+                .withAspectRatio(16f, 9f) // 横長（16:9）
+                .withMaxResultSize(1200, 675) // 最大サイズ
+                .getIntent(context)
+            
+            cropImageLauncher.launch(uCropIntent)
         }
     }
 
