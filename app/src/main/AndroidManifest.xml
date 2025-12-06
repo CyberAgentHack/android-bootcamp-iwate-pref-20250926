@@ -16,6 +16,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidBootcampIwatePref"
         tools:targetApi="31">
+        
+        <!-- FileProvider for temporary image files -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.androidbootcampiwatepref.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
