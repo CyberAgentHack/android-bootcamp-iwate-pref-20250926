@@ -46,6 +46,8 @@ class ProfileDataStore(private val context: Context) {
         private val BIRTH_DATE_KEY = longPreferencesKey("birth_date_millis") // 誕生日（エポックミリ秒）
         private val HOBBIES_KEY = stringPreferencesKey("hobbies")           // 趣味リスト（カンマ区切りで保存）
         private val THEME_KEY = stringPreferencesKey("theme")               // テーマ設定
+        private val PROFILE_IMAGE_URI_KEY = stringPreferencesKey("profile_image_uri") // プロフィール画像URI
+        private val HEADER_IMAGE_URI_KEY = stringPreferencesKey("header_image_uri")   // ヘッダー画像URI
     }
     
     // --- ニックネーム関連 ---
@@ -264,6 +266,52 @@ class ProfileDataStore(private val context: Context) {
             // 趣味リストをカンマ区切り文字列に変換して保存
             preferences[HOBBIES_KEY] = hobbies.joinToString(",")
         }
+    }
+    
+    // --- 画像URI関連 ---
+    
+    /**
+     * プロフィール画像のURIを保存
+     * 
+     * @param uri 画像のURI文字列、nullの場合はキーを削除
+     */
+    suspend fun saveProfileImageUri(uri: String?) {
+        context.dataStore.edit { preferences ->
+            if (uri != null) {
+                preferences[PROFILE_IMAGE_URI_KEY] = uri
+            } else {
+                preferences.remove(PROFILE_IMAGE_URI_KEY)
+            }
+        }
+    }
+    
+    /**
+     * プロフィール画像のURIを取得（Flow）
+     */
+    val profileImageUriFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[PROFILE_IMAGE_URI_KEY]
+    }
+    
+    /**
+     * ヘッダー画像のURIを保存
+     * 
+     * @param uri 画像のURI文字列、nullの場合はキーを削除
+     */
+    suspend fun saveHeaderImageUri(uri: String?) {
+        context.dataStore.edit { preferences ->
+            if (uri != null) {
+                preferences[HEADER_IMAGE_URI_KEY] = uri
+            } else {
+                preferences.remove(HEADER_IMAGE_URI_KEY)
+            }
+        }
+    }
+    
+    /**
+     * ヘッダー画像のURIを取得（Flow）
+     */
+    val headerImageUriFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[HEADER_IMAGE_URI_KEY]
     }
     
     /**

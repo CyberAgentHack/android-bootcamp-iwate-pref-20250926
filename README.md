@@ -209,18 +209,6 @@ Android Studioの自動フォーマット機能を使用:
 - `Ctrl + Alt + L` (Windows/Linux)
 - `Cmd + Option + L` (Mac)
 
-## 📄 ライセンス
-
-このプロジェクトは教育目的で作成されました。
-
-## 👥 作成者
-
-岩手県Androidブートキャンプ 2025
-
-## 🙏 謝辞
-
-Jetpack Composeと最新のAndroid開発技術を学ぶ機会を提供してくださった講師の方々に感謝します。
-
 ---
 
 **Happy Coding! 🚀**

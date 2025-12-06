@@ -1,5 +1,8 @@
 package com.example.androidbootcampiwatepref.ui.screen
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -12,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
+import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -45,10 +50,12 @@ import java.util.Locale
 @Composable
 fun ProfileEditScreen(
     profileData: ProfileData,
+    profileImageUri: String?,
+    headerImageUri: String?,
     useDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     onBackClick: () -> Unit,
-    onSaveClick: (ProfileData) -> Unit
+    onSaveClick: (ProfileData, String?, String?) -> Unit
 ) {
     // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
@@ -75,6 +82,8 @@ fun ProfileEditScreen(
         ProfileEditContent(
             innerPadding = innerPadding,
             initialProfileData = profileData,
+            initialProfileImageUri = profileImageUri,
+            initialHeaderImageUri = headerImageUri,
             onSaveClick = onSaveClick
         )
     }
@@ -95,8 +104,11 @@ fun ProfileEditScreen(
 fun ProfileEditContent(
     innerPadding: PaddingValues,
     initialProfileData: ProfileData,
-    onSaveClick: (ProfileData) -> Unit
+    initialProfileImageUri: String?,
+    initialHeaderImageUri: String?,
+    onSaveClick: (ProfileData, String?, String?) -> Unit
 ) {
+    val context = LocalContext.current
     // --- 状態変数の定義 ---
     // TextFieldValueを使用してカーソル位置なども管理
     var nickname by remember { mutableStateOf(TextFieldValue(initialProfileData.nickname)) }
@@ -115,6 +127,38 @@ fun ProfileEditContent(
     // 趣味関連
     var hobbies by remember { mutableStateOf(initialProfileData.hobbies.toMutableList()) }
     var hobbyInput by remember { mutableStateOf(TextFieldValue("")) }
+    
+    // 画像URI関連
+    var currentProfileImageUri by remember { mutableStateOf(initialProfileImageUri) }
+    var currentHeaderImageUri by remember { mutableStateOf(initialHeaderImageUri) }
+    
+    // 画像選択ランチャー（プロフィール画像用）
+    val profileImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            // 永続的なアクセス権限を取得
+            context.contentResolver.takePersistableUriPermission(
+                it,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            currentProfileImageUri = it.toString()
+        }
+    }
+    
+    // 画像選択ランチャー（ヘッダー画像用）
+    val headerImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            // 永続的なアクセス権限を取得
+            context.contentResolver.takePersistableUriPermission(
+                it,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            currentHeaderImageUri = it.toString()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -122,16 +166,19 @@ fun ProfileEditContent(
             .padding(innerPadding)
             .verticalScroll(rememberScrollState()),
     ) {
-        // プロフィールアイコン
-        Image(
-            painter = painterResource(id = R.drawable.ic_my_icon),
-            contentDescription = "アイコン",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = 16.dp)
-                .size(100.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
+        // プロフィールヘッダー（編集可能）
+        ProfileHeader(
+            nickname = nickname.text.ifEmpty { "ニックネーム" },
+            id = id.text.ifEmpty { "ID" },
+            profileImageUri = currentProfileImageUri,
+            headerImageUri = currentHeaderImageUri,
+            isEditable = true,
+            onProfileImageClick = {
+                profileImageLauncher.launch("image/*")
+            },
+            onHeaderImageClick = {
+                headerImageLauncher.launch("image/*")
+            }
         )
 
         Column(
@@ -319,7 +366,7 @@ fun ProfileEditContent(
                         birthDateMillis = selectedDateMillis,
                         hobbies = hobbies
                     )
-                    onSaveClick(updatedData)
+                    onSaveClick(updatedData, currentProfileImageUri, currentHeaderImageUri)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

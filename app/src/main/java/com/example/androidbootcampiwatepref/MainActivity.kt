@@ -54,6 +54,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
             
+            // 画像URIの状態管理
+            var profileImageUri by remember { mutableStateOf<String?>(null) }
+            var headerImageUri by remember { mutableStateOf<String?>(null) }
+            
             /**
              * DataStoreからデータを読み込む
              * 
@@ -69,7 +73,9 @@ class MainActivity : ComponentActivity() {
                     profileDataStore.genderIndexFlow,
                     profileDataStore.birthDateFlow,
                     profileDataStore.hobbiesFlow,
-                    profileDataStore.themeFlow
+                    profileDataStore.themeFlow,
+                    profileDataStore.profileImageUriFlow,
+                    profileDataStore.headerImageUriFlow
                 ) { values ->
                     val nickname = values[0] as String
                     val id = values[1] as String
@@ -78,6 +84,8 @@ class MainActivity : ComponentActivity() {
                     val birthDate = values[4] as Long?
                     val hobbies = values[5] as List<*>
                     val theme = values[6] as String
+                    val profImageUri = values[7] as String?
+                    val headImageUri = values[8] as String?
                     
                     profileData = ProfileData(
                         nickname = nickname,
@@ -92,6 +100,8 @@ class MainActivity : ComponentActivity() {
                     } catch (e: IllegalArgumentException) {
                         AppTheme.SYSTEM
                     }
+                    profileImageUri = profImageUri
+                    headerImageUri = headImageUri
                 }.collect {}
             }
             
@@ -124,6 +134,8 @@ class MainActivity : ComponentActivity() {
                         composable<ProfileRoutes.View> {
                             ProfileViewScreen(
                                 profileData = profileData,
+                                profileImageUri = profileImageUri,
+                                headerImageUri = headerImageUri,
                                 useDarkTheme = useDarkTheme,
                                 // テーマ切り替えボタンが押された時の処理
                                 onThemeToggle = {
@@ -146,6 +158,8 @@ class MainActivity : ComponentActivity() {
                         composable<ProfileRoutes.Edit> {
                             ProfileEditScreen(
                                 profileData = profileData,
+                                profileImageUri = profileImageUri,
+                                headerImageUri = headerImageUri,
                                 useDarkTheme = useDarkTheme,
                                 onThemeToggle = {
                                     currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
@@ -160,9 +174,12 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 },
                                 // 保存ボタンが押された時の処理
-                                onSaveClick = { updatedData ->
+                                onSaveClick = { updatedData, newProfileImageUri, newHeaderImageUri ->
                                     // アプリ内の状態を更新
                                     profileData = updatedData
+                                    profileImageUri = newProfileImageUri
+                                    headerImageUri = newHeaderImageUri
+                                    
                                     // 変更したプロフィールデータをDataStoreに永続化
                                     lifecycleScope.launch {
                                         profileDataStore.saveProfileData(
@@ -173,6 +190,9 @@ class MainActivity : ComponentActivity() {
                                             birthDateMillis = updatedData.birthDateMillis,
                                             hobbies = updatedData.hobbies
                                         )
+                                        // 画像URIも保存
+                                        profileDataStore.saveProfileImageUri(newProfileImageUri)
+                                        profileDataStore.saveHeaderImageUri(newHeaderImageUri)
                                     }
                                     // 閲覧画面に戻る
                                     navController.popBackStack()

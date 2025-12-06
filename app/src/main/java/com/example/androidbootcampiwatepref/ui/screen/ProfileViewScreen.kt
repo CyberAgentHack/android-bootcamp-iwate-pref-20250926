@@ -42,6 +42,8 @@ import java.util.Locale
 @Composable
 fun ProfileViewScreen(
     profileData: ProfileData,
+    profileImageUri: String?,
+    headerImageUri: String?,
     useDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     onEditClick: () -> Unit
@@ -68,7 +70,9 @@ fun ProfileViewScreen(
         // メインコンテンツの表示
         ProfileViewContent(
             innerPadding = innerPadding,
-            profileData = profileData
+            profileData = profileData,
+            profileImageUri = profileImageUri,
+            headerImageUri = headerImageUri
         )
     }
 }
@@ -83,7 +87,12 @@ fun ProfileViewScreen(
  * @param profileData 表示するプロフィールデータ
  */
 @Composable
-fun ProfileViewContent(innerPadding: PaddingValues, profileData: ProfileData) {
+fun ProfileViewContent(
+    innerPadding: PaddingValues, 
+    profileData: ProfileData,
+    profileImageUri: String?,
+    headerImageUri: String?
+) {
     // 性別の選択肢リスト
     val genderOptions = listOf("男性", "女性", "回答しない")
     
@@ -99,7 +108,13 @@ fun ProfileViewContent(innerPadding: PaddingValues, profileData: ProfileData) {
             .verticalScroll(rememberScrollState()), // スクロール可能にする
     ) {
         // プロフィールヘッダー（プロフィール画像、ニックネーム、ID）
-        ProfileHeader(nickname = profileData.nickname, id = profileData.id)
+        ProfileHeader(
+            nickname = profileData.nickname, 
+            id = profileData.id,
+            profileImageUri = profileImageUri,
+            headerImageUri = headerImageUri,
+            isEditable = false
+        )
 
         // プロフィール詳細情報
         Column(

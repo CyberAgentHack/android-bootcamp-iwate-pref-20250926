@@ -3,8 +3,9 @@ package com.example.androidbootcampiwatepref.ui.component
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.R
 
 /**
@@ -29,10 +31,24 @@ import com.example.androidbootcampiwatepref.R
  * 
  * @param nickname ユーザーのニックネーム
  * @param id ユーザーID
+ * @param profileImageUri プロフィール画像のURI（nullの場合はデフォルト画像）
+ * @param headerImageUri ヘッダー画像のURI（nullの場合はデフォルト画像）
+ * @param isEditable 編集可能かどうか（trueの場合、画像編集ボタンを表示）
+ * @param onProfileImageClick プロフィール画像クリック時の処理
+ * @param onHeaderImageClick ヘッダー画像クリック時の処理
  * @param modifier 外部から適用される修飾子
  */
 @Composable
-fun ProfileHeader(nickname: String, id: String, modifier: Modifier = Modifier) {
+fun ProfileHeader(
+    nickname: String, 
+    id: String, 
+    profileImageUri: String? = null,
+    headerImageUri: String? = null,
+    isEditable: Boolean = false,
+    onProfileImageClick: () -> Unit = {},
+    onHeaderImageClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     // Boxを使用してレイヤーを重ねる
     Box(
         modifier = modifier
@@ -41,14 +57,52 @@ fun ProfileHeader(nickname: String, id: String, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.TopCenter
     ) {
         // 背景のヘッダー画像
-        Image(
-            painter = painterResource(id = R.drawable.ic_my_hedder),
-            contentDescription = "ヘッダー画像",
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp),
-            contentScale = ContentScale.Crop // 画像を切り抜いてフィット
-        )
+                .height(150.dp)
+                .clickable(enabled = isEditable) { onHeaderImageClick() }
+        ) {
+            if (headerImageUri != null) {
+                // カスタム画像を表示（Coilで非同期読み込み）
+                AsyncImage(
+                    model = headerImageUri,
+                    contentDescription = "ヘッダー画像",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // デフォルト画像を表示
+                Image(
+                    painter = painterResource(id = R.drawable.ic_my_hedder),
+                    contentDescription = "ヘッダー画像",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            
+            // 編集可能な場合、編集アイコンを表示
+            if (isEditable) {
+                IconButton(
+                    onClick = onHeaderImageClick,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "ヘッダー画像を変更",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                shape = CircleShape
+                            )
+                            .padding(8.dp)
+                    )
+                }
+            }
+        }
         
         // プロフィールアイコンとテキスト情報を横並びで配置
         Row(
@@ -59,15 +113,52 @@ fun ProfileHeader(nickname: String, id: String, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.spacedBy(16.dp) // アイコンとテキスト間のスペース
         ) {
             // プロフィールアイコン（円形）
-            Image(
-                painter = painterResource(id = R.drawable.ic_my_icon),
-                contentDescription = "アイコン",
+            Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape) // 円形にクリップ
-                    .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape), // 外枠を追加
-                contentScale = ContentScale.Crop // 画像を切り抜いてフィット
-            )
+                    .clickable(enabled = isEditable) { onProfileImageClick() }
+            ) {
+                if (profileImageUri != null) {
+                    // カスタム画像を表示（Coilで非同期読み込み）
+                    AsyncImage(
+                        model = profileImageUri,
+                        contentDescription = "プロフィールアイコン",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // デフォルト画像を表示
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_my_icon),
+                        contentDescription = "プロフィールアイコン",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                
+                // 編集可能な場合、編集アイコンを表示
+                if (isEditable) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "プロフィール画像を変更",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                shape = CircleShape
+                            )
+                            .padding(4.dp)
+                            .size(24.dp)
+                    )
+                }
+            }
             
             // ニックネームとIDを縦に並べる
             Column(
