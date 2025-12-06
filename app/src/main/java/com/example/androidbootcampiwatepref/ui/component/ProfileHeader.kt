@@ -27,10 +27,8 @@ import com.example.androidbootcampiwatepref.R
  * - ヘッダー背景画像（横幅いっぱい）
  * - プロフィールアイコン（円形、ヘッダー画像の下部に重なる）
  * - ニックネーム（太字、大きめのテキスト）
- * - ID（@付き、小さめのテキスト）
  * 
  * @param nickname ユーザーのニックネーム
- * @param id ユーザーID
  * @param profileImageUri プロフィール画像のURI（nullの場合はデフォルト画像）
  * @param headerImageUri ヘッダー画像のURI（nullの場合はデフォルト画像）
  * @param isEditable 編集可能かどうか（trueの場合、画像編集ボタンを表示）
@@ -40,8 +38,7 @@ import com.example.androidbootcampiwatepref.R
  */
 @Composable
 fun ProfileHeader(
-    nickname: String, 
-    id: String, 
+    nickname: String,
     profileImageUri: String? = null,
     headerImageUri: String? = null,
     isEditable: Boolean = false,
@@ -61,7 +58,7 @@ fun ProfileHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
-                .clickable(enabled = isEditable) { onHeaderImageClick() }
+                .clickable { onHeaderImageClick() } // 常にクリック可能
         ) {
             if (headerImageUri != null) {
                 // カスタム画像を表示（Coilで非同期読み込み）
@@ -116,7 +113,7 @@ fun ProfileHeader(
             Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .clickable(enabled = isEditable) { onProfileImageClick() }
+                    .clickable { onProfileImageClick() } // 常にクリック可能
             ) {
                 if (profileImageUri != null) {
                     // カスタム画像を表示（Coilで非同期読み込み）
@@ -160,7 +157,7 @@ fun ProfileHeader(
                 }
             }
             
-            // ニックネームとIDを縦に並べる
+            // ニックネーム
             Column(
                 modifier = Modifier.padding(top = 50.dp) // アイコンの中央に揃えるための調整
             ) {
@@ -172,12 +169,6 @@ fun ProfileHeader(
                         fontFamily = FontFamily.Serif
                     ),
                     color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = if (id.isEmpty()) "@" else "@$id",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
         }

@@ -40,13 +40,15 @@ class ProfileDataStore(private val context: Context) {
         // 各データ項目のキー定義
         // DataStoreはKey-Value形式でデータを保存するため、型安全なキーを定義
         private val NICKNAME_KEY = stringPreferencesKey("nickname")          // ユーザーのニックネーム
-        private val ID_KEY = stringPreferencesKey("id")                      // ユーザーID
         private val BIO_KEY = stringPreferencesKey("bio")                    // 自己紹介文
         private val GENDER_INDEX_KEY = intPreferencesKey("gender_index")     // 性別インデックス（0:男性、1:女性、2:その他）
         private val BIRTH_DATE_KEY = longPreferencesKey("birth_date_millis") // 誕生日（エポックミリ秒）
         private val HOBBIES_KEY = stringPreferencesKey("hobbies")           // 趣味リスト（カンマ区切りで保存）
         private val THEME_KEY = stringPreferencesKey("theme")               // テーマ設定
-        private val PROFILE_IMAGE_URI_KEY = stringPreferencesKey("profile_image_uri") // プロフィール画像URI
+        private val FONT_KEY = stringPreferencesKey("font")                 // フォント設定
+        private val CARD_DESIGN_KEY = stringPreferencesKey("card_design")   // 名刺デザイン設定
+        private val PROFILE_IMAGE_URI_KEY = stringPreferencesKey("profile_image_uri") // プロフィール画像URI（トリミング済み）
+        private val PROFILE_IMAGE_ORIGINAL_URI_KEY = stringPreferencesKey("profile_image_original_uri") // プロフィール画像の元画像URI
         private val HEADER_IMAGE_URI_KEY = stringPreferencesKey("header_image_uri")   // ヘッダー画像URI
     }
     
@@ -75,28 +77,6 @@ class ProfileDataStore(private val context: Context) {
      */
     val nicknameFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[NICKNAME_KEY] ?: ""
-    }
-    
-    // --- ID関連 ---
-    
-    /**
-     * IDを保存
-     * 
-     * @param id 保存するユーザーID
-     */
-    suspend fun saveId(id: String) {
-        context.dataStore.edit { preferences ->
-            preferences[ID_KEY] = id
-        }
-    }
-    
-    /**
-     * IDを取得（Flow）
-     * 
-     * データ変更を監視可能なFlowとして返す
-     */
-    val idFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[ID_KEY] ?: ""
     }
     
     // --- 自己紹介関連 ---
@@ -225,6 +205,28 @@ class ProfileDataStore(private val context: Context) {
         preferences[THEME_KEY] ?: "SYSTEM"
     }
     
+    // --- フォント設定関連 ---
+    
+    /**
+     * フォント設定を保存
+     * 
+     * @param font フォント設定の文字列（AppFont.nameを渡す）
+     */
+    suspend fun saveFont(font: String) {
+        context.dataStore.edit { preferences ->
+            preferences[FONT_KEY] = font
+        }
+    }
+    
+    /**
+     * フォント設定を取得（Flow）
+     * 
+     * データが未設定の場合は"DEFAULT"を返す
+     */
+    val fontFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[FONT_KEY] ?: "DEFAULT"
+    }
+    
     // --- 一括操作 ---
     
     /**
@@ -234,7 +236,6 @@ class ProfileDataStore(private val context: Context) {
      * 個別に保存する代わりに、この関数を使うことでディスクI/O回数を削減
      * 
      * @param nickname ニックネーム
-     * @param id ユーザーID
      * @param bio 自己紹介
      * @param genderIndex 性別インデックス
      * @param birthDateMillis 生年月日（エポックミリ秒）、nullの場合はキーを削除
@@ -242,7 +243,6 @@ class ProfileDataStore(private val context: Context) {
      */
     suspend fun saveProfileData(
         nickname: String,
-        id: String,
         bio: String,
         genderIndex: Int,
         birthDateMillis: Long?,
@@ -252,7 +252,6 @@ class ProfileDataStore(private val context: Context) {
         // これによりDataStoreへの書き込みが1回で完了し、効率的
         context.dataStore.edit { preferences ->
             preferences[NICKNAME_KEY] = nickname
-            preferences[ID_KEY] = id
             preferences[BIO_KEY] = bio
             preferences[GENDER_INDEX_KEY] = genderIndex
             
@@ -293,6 +292,28 @@ class ProfileDataStore(private val context: Context) {
     }
     
     /**
+     * プロフィール画像の元画像URIを保存
+     * 
+     * @param uri 元画像のURI文字列、nullの場合はキーを削除
+     */
+    suspend fun saveProfileImageOriginalUri(uri: String?) {
+        context.dataStore.edit { preferences ->
+            if (uri != null) {
+                preferences[PROFILE_IMAGE_ORIGINAL_URI_KEY] = uri
+            } else {
+                preferences.remove(PROFILE_IMAGE_ORIGINAL_URI_KEY)
+            }
+        }
+    }
+    
+    /**
+     * プロフィール画像の元画像URIを取得（Flow）
+     */
+    val profileImageOriginalUriFlow: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[PROFILE_IMAGE_ORIGINAL_URI_KEY]
+    }
+    
+    /**
      * ヘッダー画像のURIを保存
      * 
      * @param uri 画像のURI文字列、nullの場合はキーを削除
@@ -312,6 +333,24 @@ class ProfileDataStore(private val context: Context) {
      */
     val headerImageUriFlow: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[HEADER_IMAGE_URI_KEY]
+    }
+    
+    /**
+     * カードデザインを保存
+     * 
+     * @param cardDesign 名刺デザインの名前
+     */
+    suspend fun saveCardDesign(cardDesign: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CARD_DESIGN_KEY] = cardDesign
+        }
+    }
+    
+    /**
+     * カードデザインを取得（Flow）
+     */
+    val cardDesignFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[CARD_DESIGN_KEY] ?: "CLASSIC"
     }
     
     /**

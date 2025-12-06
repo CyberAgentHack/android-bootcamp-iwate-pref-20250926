@@ -1,12 +1,15 @@
 # Android Bootcamp Iwate Pref - プロフィールアプリ
 
-岩手県向けAndroidブートキャンプで作成したプロフィール管理アプリケーションです。
-
 ## 📱 機能
 
-- **プロフィール閲覧** - ニックネーム、ID、自己紹介、性別、生年月日、趣味を表示
-- **プロフィール編集** - 各項目の編集と保存
-- **データ永続化** - DataStoreによるローカルデータ保存
+- **名刺風デザイン** - プロフィールを名刺風のカードで表示（フリップアニメーション）
+- **6種類のカードデザイン** - Classic, Ocean, Sunset, Forest, Purple, Night から選択可能
+- **テキスト色の自動調整** - 各デザインに最適化された読みやすい文字色
+- **スライド編集** - カードをスワイプして表面・裏面を編集
+- **プロフィール編集** - ニックネーム、自己紹介、性別、生年月日、趣味の編集
+- **カスタム画像** - 端末から画像を選択してプロフィールアイコンとヘッダーに設定
+- **画像トリミング** - UCropライブラリによる高度な画像切り抜き機能
+- **データ永続化** - DataStoreによるローカルデータ保存（画像URI、選択デザインも含む）
 - **ダークモード対応** - ライト/ダーク/システム設定に対応
 - **画面遷移** - Navigation Composeによる滑らかな画面遷移
 
@@ -22,6 +25,7 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 ├── domain/
 │   └── model/
 │       ├── AppTheme.kt               # テーマEnum
+│       ├── CardDesign.kt             # カードデザインEnum（6種類）
 │       └── ProfileData.kt            # プロフィールデータモデル
 ├── navigation/
 │   └── ProfileRoutes.kt              # ナビゲーションルート定義
@@ -30,8 +34,9 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 │   │   ├── ProfileHeader.kt         # ヘッダーコンポーネント
 │   │   └── ProfileInfoRow.kt        # 情報行コンポーネント
 │   ├── screen/
-│   │   ├── ProfileViewScreen.kt     # 閲覧画面
-│   │   └── ProfileEditScreen.kt     # 編集画面
+│   │   ├── ProfileViewScreen.kt     # 閲覧画面（名刺風デザイン）
+│   │   ├── ProfileEditScreen.kt     # 編集画面（スライド式）
+│   │   └── SettingsScreen.kt        # 設定画面（テーマ、フォント、カードデザイン）
 │   └── theme/
 │       └── AndroidBootcampIwatePrefTheme.kt
 ```
@@ -43,6 +48,7 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 - **ナビゲーション**: Navigation Compose with Type-Safe Routes
 - **データ永続化**: DataStore (Preferences)
 - **非同期処理**: Kotlin Coroutines & Flow
+- **画像処理**: Coil (画像読み込み), UCrop (トリミング)
 - **ビルドツール**: Gradle (Kotlin DSL)
 
 ### 主要な依存関係
@@ -60,6 +66,13 @@ implementation("androidx.datastore:datastore-preferences:1.0.0")
 
 // Serialization (Type-Safe Navigation)
 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+// 画像処理
+implementation("io.coil-kt:coil-compose:2.5.0")  // 画像読み込み
+implementation("com.github.yalantis:ucrop:2.2.8")  // 画像トリミング
+
+// UI拡張
+implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPager
 ```
 
 ## 🚀 セットアップ
@@ -107,31 +120,45 @@ implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
 ## 📝 使い方
 
-### プロフィール閲覧画面
+### プロフィール閲覧画面（名刺風デザイン）
 
 - アプリ起動時に表示される画面
+- **名刺をタップして反転** - 表面と裏面をフリップアニメーションで切り替え
 - 右上の編集アイコンで編集画面へ遷移
-- 右上の月/太陽アイコンでテーマ切り替え
+- 右上の歯車アイコンで設定画面へ遷移
 
-### プロフィール編集画面
+### プロフィール編集画面（スライド式）
 
-1. **基本情報の入力**
+1. **カードのスワイプ**
+   - 左右にスワイプして表面・裏面を切り替え
+   - ページインジケーターで現在の面を表示
+
+2. **表面の編集**
+   - プロフィール画像（タップして画像選択・トリミング）
    - ニックネーム
-   - ID (@付き)
    - 自己紹介
 
-2. **詳細情報の選択**
+3. **裏面の編集**
+   - ヘッダー画像（タップして画像選択・トリミング）
    - 性別 (男性/女性/回答しない)
    - 生年月日 (DatePickerから選択)
-
-3. **趣味・興味の追加**
-   - テキストフィールドに入力
-   - 「+」ボタンで追加
-   - タグをタップして削除
+   - 趣味・興味（「+」ボタンで追加、タグをタップして削除）
 
 4. **保存**
    - 「保存」ボタンで保存して閲覧画面へ戻る
    - 左上の戻るボタンでキャンセル
+
+### 設定画面
+
+- **テーマ選択** - ライト/ダーク/システム設定
+- **フォントサイズ** - 小/中/大
+- **カードデザイン選択** - 6種類のデザインから選択
+  - **Classic** - グレー/ホワイトのグラデーション
+  - **Ocean** - ブルー系のグラデーション
+  - **Sunset** - オレンジ/レッド系のグラデーション
+  - **Forest** - グリーン系のグラデーション
+  - **Purple** - パープル系のグラデーション
+  - **Night** - ダークグレーのグラデーション
 
 ## 🎨 DataStoreの活用
 
@@ -173,8 +200,28 @@ val nicknameFlow: Flow<String> = context.dataStore.data.map { preferences ->
 
 - `ProfileHeader`: ヘッダー画像とアイコンの表示
 - `ProfileInfoRow`: ラベルと値のペア表示
+- `BusinessCardFront`/`BusinessCardBack`: 名刺の表面・裏面コンポーネント
+- `EditCardFront`/`EditCardBack`: 編集用カードコンポーネント
 
 再利用可能なコンポーネントを作成することで、コードの重複を削減し、メンテナンス性を向上させています。
+
+### カードデザインシステム
+
+各カードデザインは `CardDesign` Enumで定義され、以下の要素を持ちます：
+
+- **グラデーション背景** - 表面・裏面それぞれに最適化された `Brush.verticalGradient`
+- **テキストカラー** - 各デザインの背景色に対して最適なコントラストを持つ文字色
+- **一貫性** - 閲覧画面と編集画面で同じデザインシステムを使用
+
+```kotlin
+enum class CardDesign(
+    val displayName: String,
+    val frontBrush: Brush,
+    val backBrush: Brush,
+    val frontTextColor: Color,
+    val backTextColor: Color
+)
+```
 
 ## 🧪 テスト
 

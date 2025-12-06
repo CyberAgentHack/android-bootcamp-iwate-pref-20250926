@@ -40,6 +40,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun AndroidBootcampIwatePrefTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    fontFamily: androidx.compose.ui.text.font.FontFamily = androidx.compose.ui.text.font.FontFamily.Default,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -64,7 +65,7 @@ fun AndroidBootcampIwatePrefTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = createTypography(fontFamily),
         content = content
     )
 }

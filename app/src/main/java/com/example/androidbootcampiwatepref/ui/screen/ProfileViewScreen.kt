@@ -1,24 +1,32 @@
 package com.example.androidbootcampiwatepref.ui.screen
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
 import com.example.androidbootcampiwatepref.ui.component.ProfileInfoRow
+import com.example.androidbootcampiwatepref.ui.component.ImageViewerDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,10 +51,15 @@ import java.util.Locale
 fun ProfileViewScreen(
     profileData: ProfileData,
     profileImageUri: String?,
+    profileImageOriginalUri: String?,
     headerImageUri: String?,
     useDarkTheme: Boolean,
+    currentFont: com.example.androidbootcampiwatepref.domain.model.AppFont,
+    currentCardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
     onThemeToggle: () -> Unit,
-    onEditClick: () -> Unit
+    onFontToggle: () -> Unit,
+    onEditClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
@@ -59,9 +72,9 @@ fun ProfileViewScreen(
                     IconButton(onClick = onEditClick) {
                         Icon(Icons.Default.Edit, contentDescription = "編集")
                     }
-                    // テーマ切り替えボタン（現在のテーマに応じて絵文字を変更）
-                    IconButton(onClick = onThemeToggle) {
-                        Text(if (useDarkTheme) "☀️" else "🌙")
+                    // 設定ボタン
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "設定")
                     }
                 }
             )
@@ -72,18 +85,21 @@ fun ProfileViewScreen(
             innerPadding = innerPadding,
             profileData = profileData,
             profileImageUri = profileImageUri,
-            headerImageUri = headerImageUri
+            profileImageOriginalUri = profileImageOriginalUri,
+            headerImageUri = headerImageUri,
+            cardDesign = currentCardDesign
         )
     }
 }
 
 /**
- * プロフィール閲覧画面のコンテンツ
+ * プロフィール閲覧画面のコンテンツ（名刺風デザイン）
  * 
- * プロフィール情報を表示する実際のUI部分
- * スクロール可能なレイアウトで各項目を縦に並べて表示
+ * 名刺のような表裏デザインで情報を表示
+ * 表面: アイコン、ニックネーム、ID
+ * 裏面: 詳細情報（性別、誕生日、自己紹介、趣味）
  * 
- * @param innerPadding Scaffoldから渡されるPadding（システムバーを避けるため）
+ * @param innerPadding Scaffoldから渡されるPadding
  * @param profileData 表示するプロフィールデータ
  */
 @Composable
@@ -91,83 +107,281 @@ fun ProfileViewContent(
     innerPadding: PaddingValues, 
     profileData: ProfileData,
     profileImageUri: String?,
-    headerImageUri: String?
+    profileImageOriginalUri: String?,
+    headerImageUri: String?,
+    cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign
 ) {
+    // カードの表裏状態を管理
+    var isFlipped by remember { mutableStateOf(false) }
+    
+    // 回転アニメーション（0度→180度）
+    val rotation by animateFloatAsState(
+        targetValue = if (isFlipped) 180f else 0f,
+        animationSpec = tween(
+            durationMillis = 600,
+            easing = FastOutSlowInEasing
+        ),
+        label = "card_flip"
+    )
+    
+    // 画像拡大表示の状態管理
+    var showProfileImageViewer by remember { mutableStateOf(false) }
+    
     // 性別の選択肢リスト
     val genderOptions = listOf("男性", "女性", "回答しない")
     
-    // 日付フォーマッター（yyyy/MM/dd形式）
-    // rememberを使用してリコンポジション時に再生成されないようにする
+    // 日付フォーマッター
     val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
 
-    // 縦スクロール可能なレイアウト
-    Column(
+    // 中央に配置
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState()), // スクロール可能にする
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
     ) {
-        // プロフィールヘッダー（プロフィール画像、ニックネーム、ID）
-        ProfileHeader(
-            nickname = profileData.nickname, 
-            id = profileData.id,
-            profileImageUri = profileImageUri,
-            headerImageUri = headerImageUri,
-            isEditable = false
-        )
-
-        // プロフィール詳細情報
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp) // 各項目間のスペース
+        // 名刺カード（表裏反転）
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.63f) // 名刺の比率（横:縦 = 91:57mm ≈ 1.6:1の逆）
+                .graphicsLayer {
+                    rotationY = rotation
+                    cameraDistance = 12f * density
+                }
+                .clickable { isFlipped = !isFlipped },
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            // 各項目をProfileInfoRowコンポーネントで表示
-            ProfileInfoRow(label = "自己紹介", value = profileData.bio)
-            ProfileInfoRow(label = "性別", value = genderOptions[profileData.genderIndex])
-            
-            // 生年月日（エポックミリ秒を日付文字列に変換）
-            ProfileInfoRow(
-                label = "生年月日",
-                value = profileData.birthDateMillis?.let {
-                    // エポックミリ秒をDate型に変換してフォーマット
-                    birthDateFormatter.format(Date(it))
-                } ?: "未設定" // nullの場合は"未設定"と表示
-            )
-
-            // 趣味・興味リスト
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // ラベル
-                Text(
-                    text = "趣味・興味",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
+            // 前半90度は表面、後半90度は裏面を表示
+            if (rotation <= 90f) {
+                // 表面（シンプル）
+                BusinessCardFront(
+                    profileData = profileData,
+                    profileImageUri = profileImageUri,
+                    cardDesign = cardDesign,
+                    onImageClick = { showProfileImageViewer = true }
                 )
-                
-                // 趣味リストが空の場合の処理
-                if (profileData.hobbies.isEmpty()) {
-                    Text(
-                        text = "",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                } else {
-                    // 趣味を横スクロール可能なリストで表示
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp), // 各チップ間のスペース
-                        contentPadding = PaddingValues(bottom = 8.dp)
-                    ) {
-                        // 各趣味をチップ形式で表示
-                        items(profileData.hobbies) { hobby ->
-                            SuggestionChip(
-                                onClick = {},
-                                label = { Text(hobby) }
-                            )
+            } else {
+                // 裏面（詳細情報）- 鏡像反転を修正
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationY = 180f
                         }
+                ) {
+                    BusinessCardBack(
+                        profileData = profileData,
+                        genderOptions = genderOptions,
+                        birthDateFormatter = birthDateFormatter,
+                        cardDesign = cardDesign
+                    )
+                }
+            }
+        }
+    }
+    
+    // プロフィール画像の拡大表示ダイアログ
+    if (showProfileImageViewer) {
+        ImageViewerDialog(
+            imageUri = profileImageOriginalUri ?: profileImageUri,
+            defaultImageRes = R.drawable.ic_my_icon,
+            contentDescription = "プロフィール画像",
+            onDismiss = { showProfileImageViewer = false }
+        )
+    }
+}
+
+/**
+ * 名刺の表面デザイン
+ */
+@Composable
+fun BusinessCardFront(
+    profileData: ProfileData,
+    profileImageUri: String?,
+    cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
+    onImageClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(cardDesign.frontBrush)
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // アイコン
+        if (profileImageUri != null) {
+            AsyncImage(
+                model = profileImageUri,
+                contentDescription = "プロフィール画像",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onImageClick),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.ic_my_icon),
+                contentDescription = "プロフィール画像",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onImageClick),
+                contentScale = ContentScale.Crop
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // ニックネーム（大きく）
+        Text(
+            text = profileData.nickname.ifEmpty { "名前未設定" },
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = cardDesign.frontTextColor
+        )
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        // 裏面への案内
+        Text(
+            text = "タップして詳細を表示 →",
+            style = MaterialTheme.typography.bodySmall,
+            color = cardDesign.frontTextColor.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+/**
+ * 名刺の裏面デザイン
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun BusinessCardBack(
+    profileData: ProfileData,
+    genderOptions: List<String>,
+    birthDateFormatter: SimpleDateFormat,
+    cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(cardDesign.backBrush)
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        // 戻る案内
+        Text(
+            text = "← タップして表面へ",
+            style = MaterialTheme.typography.bodySmall,
+            color = cardDesign.backTextColor.copy(alpha = 0.7f)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 基本情報
+        InfoItem(
+            icon = "🎂",
+            label = "生年月日",
+            value = profileData.birthDateMillis?.let {
+                birthDateFormatter.format(Date(it))
+            } ?: "未設定",
+            textColor = cardDesign.backTextColor
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        InfoItem(
+            icon = "⚥",
+            label = "性別",
+            value = genderOptions[profileData.genderIndex],
+            textColor = cardDesign.backTextColor
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 自己紹介
+        Column {
+            Text(
+                text = "📝 自己紹介",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = cardDesign.backTextColor.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = profileData.bio.ifEmpty { "未設定" },
+                style = MaterialTheme.typography.bodyMedium,
+                color = cardDesign.backTextColor
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 趣味
+        Column {
+            Text(
+                text = "🎨 趣味・興味",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = cardDesign.backTextColor.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            if (profileData.hobbies.isEmpty()) {
+                Text(
+                    text = "未設定",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = cardDesign.backTextColor
+                )
+            } else {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    profileData.hobbies.forEach { hobby ->
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text(hobby) }
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * 情報項目表示用コンポーネント
+ */
+@Composable
+fun InfoItem(icon: String, label: String, value: String, textColor: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = icon,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.width(32.dp)
+        )
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = textColor.copy(alpha = 0.7f)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor
+            )
         }
     }
 }

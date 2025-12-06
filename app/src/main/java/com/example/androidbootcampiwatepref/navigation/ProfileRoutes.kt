@@ -27,4 +27,12 @@ sealed interface ProfileRoutes {
      */
     @Serializable
     data object Edit : ProfileRoutes
+    
+    /**
+     * 設定画面
+     * 
+     * @Serializableアノテーションにより、Navigation Composeが自動的にルートを処理
+     */
+    @Serializable
+    data object Settings : ProfileRoutes
 }

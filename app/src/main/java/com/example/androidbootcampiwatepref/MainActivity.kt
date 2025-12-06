@@ -11,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import com.example.androidbootcampiwatepref.data.ProfileDataStore
 import com.example.androidbootcampiwatepref.domain.model.*
 import com.example.androidbootcampiwatepref.navigation.ProfileRoutes
@@ -45,7 +47,6 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(
                     ProfileData(
                         nickname = "",
-                        id ="",
                         bio = "",
                         genderIndex = 0,
                         birthDateMillis = Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis,
@@ -56,6 +57,7 @@ class MainActivity : ComponentActivity() {
             
             // 画像URIの状態管理
             var profileImageUri by remember { mutableStateOf<String?>(null) }
+            var profileImageOriginalUri by remember { mutableStateOf<String?>(null) }
             var headerImageUri by remember { mutableStateOf<String?>(null) }
             
             /**
@@ -65,31 +67,40 @@ class MainActivity : ComponentActivity() {
              * combine関数で複数のFlowを結合し、いずれかの値が変更されたら
              * 全てのデータを取得して状態を更新する。
              */
+            // フォント設定を管理
+            var currentFont by remember { mutableStateOf(AppFont.DEFAULT) }
+            
+            // カードデザイン設定を管理
+            var currentCardDesign by remember { mutableStateOf(com.example.androidbootcampiwatepref.domain.model.CardDesign.CLASSIC) }
+            
             LaunchedEffect(Unit) {
                 combine(
                     profileDataStore.nicknameFlow,
-                    profileDataStore.idFlow,
                     profileDataStore.bioFlow,
                     profileDataStore.genderIndexFlow,
                     profileDataStore.birthDateFlow,
                     profileDataStore.hobbiesFlow,
                     profileDataStore.themeFlow,
+                    profileDataStore.fontFlow,
                     profileDataStore.profileImageUriFlow,
-                    profileDataStore.headerImageUriFlow
+                    profileDataStore.profileImageOriginalUriFlow,
+                    profileDataStore.headerImageUriFlow,
+                    profileDataStore.cardDesignFlow
                 ) { values ->
                     val nickname = values[0] as String
-                    val id = values[1] as String
-                    val bio = values[2] as String
-                    val genderIndex = values[3] as Int
-                    val birthDate = values[4] as Long?
-                    val hobbies = values[5] as List<*>
-                    val theme = values[6] as String
+                    val bio = values[1] as String
+                    val genderIndex = values[2] as Int
+                    val birthDate = values[3] as Long?
+                    val hobbies = values[4] as List<*>
+                    val theme = values[5] as String
+                    val font = values[6] as String
                     val profImageUri = values[7] as String?
-                    val headImageUri = values[8] as String?
+                    val profImageOriginalUri = values[8] as String?
+                    val headImageUri = values[9] as String?
+                    val cardDesign = values[10] as String
                     
                     profileData = ProfileData(
                         nickname = nickname,
-                        id = id,
                         bio = bio,
                         genderIndex = genderIndex,
                         birthDateMillis = birthDate ?: Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis,
@@ -100,7 +111,14 @@ class MainActivity : ComponentActivity() {
                     } catch (e: IllegalArgumentException) {
                         AppTheme.SYSTEM
                     }
+                    currentFont = try {
+                        AppFont.valueOf(font)
+                    } catch (e: IllegalArgumentException) {
+                        AppFont.DEFAULT
+                    }
+                    currentCardDesign = com.example.androidbootcampiwatepref.domain.model.CardDesign.fromName(cardDesign)
                     profileImageUri = profImageUri
+                    profileImageOriginalUri = profImageOriginalUri
                     headerImageUri = headImageUri
                 }.collect {}
             }
@@ -116,8 +134,16 @@ class MainActivity : ComponentActivity() {
                 AppTheme.DARK -> true
             }
             
+            // フォントファミリーの決定
+            val fontFamily = when (currentFont) {
+                AppFont.DEFAULT -> androidx.compose.ui.text.font.FontFamily.Default
+                AppFont.SERIF -> androidx.compose.ui.text.font.FontFamily.Serif
+                AppFont.MONOSPACE -> androidx.compose.ui.text.font.FontFamily.Monospace
+                AppFont.CURSIVE -> androidx.compose.ui.text.font.FontFamily.Cursive
+            }
+            
             // アプリのテーマを適用
-            AndroidBootcampIwatePrefTheme(darkTheme = useDarkTheme) {
+            AndroidBootcampIwatePrefTheme(darkTheme = useDarkTheme, fontFamily = fontFamily) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -128,15 +154,58 @@ class MainActivity : ComponentActivity() {
                     // ナビゲーショングラフを定義（開始画面はView画面）
                     NavHost(
                         navController = navController,
-                        startDestination = ProfileRoutes.View
+                        startDestination = ProfileRoutes.View,
+                        enterTransition = {
+                            // 右から左にスライドイン（ゆっくり）
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                        },
+                        exitTransition = {
+                            // 左にスライドアウト
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                        },
+                        popEnterTransition = {
+                            // 戻る時は左から右にスライドイン（ゆっくり）
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                        },
+                        popExitTransition = {
+                            // 戻る時は右にスライドアウト
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                        }
                     ) {
                         // プロフィール閲覧画面の定義
                         composable<ProfileRoutes.View> {
                             ProfileViewScreen(
                                 profileData = profileData,
                                 profileImageUri = profileImageUri,
+                                profileImageOriginalUri = profileImageOriginalUri,
                                 headerImageUri = headerImageUri,
                                 useDarkTheme = useDarkTheme,
+                                currentFont = currentFont,
+                                currentCardDesign = currentCardDesign,
                                 // テーマ切り替えボタンが押された時の処理
                                 onThemeToggle = {
                                     // 現在のテーマに応じて次のテーマに切り替え
@@ -146,10 +215,29 @@ class MainActivity : ComponentActivity() {
                                         profileDataStore.saveTheme(currentTheme.name)
                                     }
                                 },
+                                // フォント切り替えボタンが押された時の処理
+                                onFontToggle = {
+                                    // 次のフォントに切り替え
+                                    currentFont = when (currentFont) {
+                                        AppFont.DEFAULT -> AppFont.SERIF
+                                        AppFont.SERIF -> AppFont.MONOSPACE
+                                        AppFont.MONOSPACE -> AppFont.CURSIVE
+                                        AppFont.CURSIVE -> AppFont.DEFAULT
+                                    }
+                                    // 変更したフォント設定をDataStoreに保存
+                                    lifecycleScope.launch {
+                                        profileDataStore.saveFont(currentFont.name)
+                                    }
+                                },
                                 // 編集ボタンが押された時の処理
                                 onEditClick = {
                                     // 編集画面に遷移
                                     navController.navigate(ProfileRoutes.Edit)
+                                },
+                                // 設定ボタンが押された時の処理
+                                onSettingsClick = {
+                                    // 設定画面に遷移
+                                    navController.navigate(ProfileRoutes.Settings)
                                 }
                             )
                         }
@@ -160,31 +248,24 @@ class MainActivity : ComponentActivity() {
                                 profileData = profileData,
                                 profileImageUri = profileImageUri,
                                 headerImageUri = headerImageUri,
-                                useDarkTheme = useDarkTheme,
-                                onThemeToggle = {
-                                    currentTheme = if (useDarkTheme) AppTheme.LIGHT else AppTheme.DARK
-                                    // テーマ設定を保存
-                                    lifecycleScope.launch {
-                                        profileDataStore.saveTheme(currentTheme.name)
-                                    }
-                                },
+                                currentCardDesign = currentCardDesign,
                                 // 戻るボタンが押された時の処理
                                 onBackClick = {
                                     // 前の画面に戻る（変更は保存されない）
                                     navController.popBackStack()
                                 },
                                 // 保存ボタンが押された時の処理
-                                onSaveClick = { updatedData, newProfileImageUri, newHeaderImageUri ->
+                                onSaveClick = { updatedData, newProfileImageUri, newProfileImageOrigUri, newHeaderImageUri ->
                                     // アプリ内の状態を更新
                                     profileData = updatedData
                                     profileImageUri = newProfileImageUri
+                                    profileImageOriginalUri = newProfileImageOrigUri
                                     headerImageUri = newHeaderImageUri
                                     
                                     // 変更したプロフィールデータをDataStoreに永続化
                                     lifecycleScope.launch {
                                         profileDataStore.saveProfileData(
                                             nickname = updatedData.nickname,
-                                            id = updatedData.id,
                                             bio = updatedData.bio,
                                             genderIndex = updatedData.genderIndex,
                                             birthDateMillis = updatedData.birthDateMillis,
@@ -192,9 +273,40 @@ class MainActivity : ComponentActivity() {
                                         )
                                         // 画像URIも保存
                                         profileDataStore.saveProfileImageUri(newProfileImageUri)
+                                        profileDataStore.saveProfileImageOriginalUri(newProfileImageOrigUri)
                                         profileDataStore.saveHeaderImageUri(newHeaderImageUri)
                                     }
                                     // 閲覧画面に戻る
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                        
+                        // 設定画面の定義
+                        composable<ProfileRoutes.Settings> {
+                            SettingsScreen(
+                                currentTheme = currentTheme,
+                                currentFont = currentFont,
+                                currentCardDesign = currentCardDesign,
+                                onThemeChange = { newTheme ->
+                                    currentTheme = newTheme
+                                    lifecycleScope.launch {
+                                        profileDataStore.saveTheme(newTheme.name)
+                                    }
+                                },
+                                onFontChange = { newFont ->
+                                    currentFont = newFont
+                                    lifecycleScope.launch {
+                                        profileDataStore.saveFont(newFont.name)
+                                    }
+                                },
+                                onCardDesignChange = { newDesign ->
+                                    currentCardDesign = newDesign
+                                    lifecycleScope.launch {
+                                        profileDataStore.saveCardDesign(newDesign.name)
+                                    }
+                                },
+                                onBackClick = {
                                     navController.popBackStack()
                                 }
                             )
