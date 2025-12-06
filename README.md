@@ -48,7 +48,7 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 │   └── ProfileRoutes.kt              # ナビゲーションルート定義
 ├── ui/
 │   ├── component/
-│   │   ├── ProfileHeader.kt         # ヘッダーコンポーネント
+│   │   ├── ProfileHeader.kt         # プロフィールヘッダーコンポーネント（アイコン+背景画像）
 │   │   ├── ProfileInfoRow.kt        # 情報行コンポーネント
 │   │   └── ImageViewerDialog.kt     # 画像拡大表示ダイアログ
 │   ├── navigation/
@@ -266,10 +266,11 @@ class MainViewModel(private val profileDataStore: ProfileDataStore) : ViewModel(
 
 ### コンポーネントの再利用
 
-- `ProfileHeader`: ヘッダー画像とアイコンの表示
-- `ProfileInfoRow`: ラベルと値のペア表示
-- `BusinessCardFront`/`BusinessCardBack`: 名刺の表面・裏面コンポーネント
-- `EditCardFront`/`EditCardBack`: 編集用カードコンポーネント
+- `ProfileHeader`: プロフィールアイコンとヘッダー背景画像の表示（編集モード対応）
+- `ProfileInfoRow`: ラベルと値のペア表示（性別、生年月日、趣味など）
+- `BusinessCardFront`/`BusinessCardBack`: 名刺の表面・裏面コンポーネント（フリップアニメーション対応）
+- `EditCardFront`/`EditCardBack`: 編集用カードコンポーネント（スワイプ対応）
+- `ImageViewerDialog`: 画像の拡大表示ダイアログ
 
 再利用可能なコンポーネントを作成することで、コードの重複を削減し、メンテナンス性を向上させています。
 
