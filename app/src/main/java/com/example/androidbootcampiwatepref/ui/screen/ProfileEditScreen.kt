@@ -35,6 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
+import com.example.androidbootcampiwatepref.domain.model.GENDER_OPTIONS
+import com.example.androidbootcampiwatepref.domain.model.BIRTH_DATE_FORMATTER
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -122,13 +124,15 @@ fun ProfileEditContent(
     var bio by remember { mutableStateOf(TextFieldValue(initialProfileData.bio)) }
     
     // 性別関連
-    val genderOptions = listOf("男性", "女性", "回答しない")
+    // 共通定数を使用（ProfileConstants.ktで定義）
+    val genderOptions = GENDER_OPTIONS
     var selectedGenderIndex by remember { mutableStateOf(initialProfileData.genderIndex) }
     
     // 誕生日関連
     var selectedDateMillis by remember { mutableStateOf(initialProfileData.birthDateMillis) }
     var showDatePickerDialog by remember { mutableStateOf(false) }
-    val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
+    // 共通定数を使用（ProfileConstants.ktで定義）
+    val birthDateFormatter = BIRTH_DATE_FORMATTER
     
     // 趣味関連
     var hobbies by remember { mutableStateOf(initialProfileData.hobbies.toMutableList()) }

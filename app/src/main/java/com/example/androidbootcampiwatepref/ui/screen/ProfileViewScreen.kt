@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
+import com.example.androidbootcampiwatepref.domain.model.GENDER_OPTIONS
+import com.example.androidbootcampiwatepref.domain.model.BIRTH_DATE_FORMATTER
+import com.example.androidbootcampiwatepref.domain.model.UNSET_TEXT
+import com.example.androidbootcampiwatepref.domain.model.GenderOption
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
 import com.example.androidbootcampiwatepref.ui.component.ProfileInfoRow
 import com.example.androidbootcampiwatepref.ui.component.ImageViewerDialog
@@ -55,8 +59,7 @@ fun ProfileViewScreen(
     currentCardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
     onEditClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onQRCodeClick: () -> Unit,
-    onCardHolderClick: () -> Unit
+    onQRCodeClick: () -> Unit
 ) {
     // Scaffoldを使用して基本的な画面レイアウトを構築
     Scaffold(
@@ -84,8 +87,7 @@ fun ProfileViewScreen(
             profileImageUri = profileImageUri,
             profileImageOriginalUri = profileImageOriginalUri,
             cardDesign = currentCardDesign,
-            onQRCodeClick = onQRCodeClick,
-            onCardHolderClick = onCardHolderClick
+            onQRCodeClick = onQRCodeClick
         )
     }
 }
@@ -107,8 +109,7 @@ fun ProfileViewContent(
     profileImageUri: String?,
     profileImageOriginalUri: String?,
     cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
-    onQRCodeClick: () -> Unit,
-    onCardHolderClick: () -> Unit
+    onQRCodeClick: () -> Unit
 ) {
     // カードの表裏状態を管理
     var isFlipped by remember { mutableStateOf(false) }
@@ -126,41 +127,18 @@ fun ProfileViewContent(
     // 画像拡大表示の状態管理
     var showProfileImageViewer by remember { mutableStateOf(false) }
     
-    // 性別の選択肢リスト
-    val genderOptions = listOf("男性", "女性", "回答しない")
-    
-    // 日付フォーマッター
-    val birthDateFormatter = remember { SimpleDateFormat("yyyy/MM/dd", Locale.JAPAN) }
+    // 共通定数を使用（ProfileConstants.ktで定義）
+    val genderOptions = GENDER_OPTIONS
+    val birthDateFormatter = BIRTH_DATE_FORMATTER
 
     // 中央に配置
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
             .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentAlignment = Alignment.Center
     ) {
-        // QRコードと名刺ホルダーボタン
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Button(
-                onClick = onQRCodeClick,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("QRコード表示")
-            }
-            
-            Button(
-                onClick = onCardHolderClick,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("名刺ホルダー")
-            }
-        }
-        
         // 名刺カード（表裏反転）
         Card(
             modifier = Modifier
@@ -311,7 +289,7 @@ fun BusinessCardBack(
             label = "生年月日",
             value = profileData.birthDateMillis?.let {
                 birthDateFormatter.format(Date(it))
-            } ?: "未設定",
+            } ?: UNSET_TEXT,
             textColor = cardDesign.backTextColor
         )
         
@@ -336,7 +314,7 @@ fun BusinessCardBack(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = profileData.bio.ifEmpty { "未設定" },
+                text = profileData.bio.ifEmpty { UNSET_TEXT },
                 style = MaterialTheme.typography.bodyMedium,
                 color = cardDesign.backTextColor
             )
@@ -356,7 +334,7 @@ fun BusinessCardBack(
             
             if (profileData.hobbies.isEmpty()) {
                 Text(
-                    text = "未設定",
+                    text = UNSET_TEXT,
                     style = MaterialTheme.typography.bodyMedium,
                     color = cardDesign.backTextColor
                 )

@@ -1,6 +1,7 @@
 package com.example.androidbootcampiwatepref.domain.model
 
 import kotlinx.serialization.Serializable
+import com.example.androidbootcampiwatepref.domain.model.GenderOption
 
 /**
  * QRコードで交換する名刺データ
@@ -46,12 +47,8 @@ data class BusinessCardData(
             hobbies: List<String>,
             cardDesign: String
         ): BusinessCardData {
-            // 性別インデックスを文字列に変換
-            val genderText = when (genderIndex) {
-                0 -> "男性"
-                1 -> "女性"
-                else -> "回答しない"
-            }
+            // 性別インデックスを文字列に変換（共通定数を使用）
+            val genderText = GenderOption.fromIndex(genderIndex).label
             
             // 生年月日をミリ秒から"yyyy-MM-dd"形式の文字列に変換
             val birthDateText = birthDateMillis?.let {

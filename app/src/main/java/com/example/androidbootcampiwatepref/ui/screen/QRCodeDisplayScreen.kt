@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
+import com.example.androidbootcampiwatepref.domain.model.GenderOption
 import com.example.androidbootcampiwatepref.util.QRCodeGenerator
 
 /**
@@ -141,11 +142,8 @@ fun QRCodeDisplayScreen(
                     InfoRow(label = "ニックネーム", value = nickname)
                     InfoRow(label = "自己紹介", value = bio)
                     
-                    val genderText = when (genderIndex) {
-                        0 -> "男性"
-                        1 -> "女性"
-                        else -> "回答しない"
-                    }
+                    // 性別インデックスを文字列に変換（共通定数を使用）
+                    val genderText = GenderOption.fromIndex(genderIndex).label
                     InfoRow(label = "性別", value = genderText)
                     
                     if (birthDateMillis != null) {

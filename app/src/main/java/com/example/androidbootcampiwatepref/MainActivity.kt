@@ -16,6 +16,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import com.example.androidbootcampiwatepref.data.ProfileDataStore
 import com.example.androidbootcampiwatepref.domain.model.*
+import com.example.androidbootcampiwatepref.domain.model.DEFAULT_BIRTH_DATE_MILLIS
 import com.example.androidbootcampiwatepref.navigation.ProfileRoutes
 import com.example.androidbootcampiwatepref.ui.screen.*
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         nickname = "",
                         bio = "",
                         genderIndex = 0,
-                        birthDateMillis = Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis,
+                        birthDateMillis = DEFAULT_BIRTH_DATE_MILLIS,
                         hobbies = emptyList()
                     )
                 )
@@ -110,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         nickname = nickname,
                         bio = bio,
                         genderIndex = genderIndex,
-                        birthDateMillis = birthDate ?: Calendar.getInstance().apply{ set(2000,0,1) }.timeInMillis,
+                        birthDateMillis = birthDate ?: DEFAULT_BIRTH_DATE_MILLIS,
                         hobbies = hobbies.filterIsInstance<String>()
                     )
                     currentTheme = try {
@@ -224,10 +225,6 @@ class MainActivity : ComponentActivity() {
                                 // QRコード表示ボタンが押された時の処理
                                 onQRCodeClick = {
                                     navController.navigate(ProfileRoutes.QRCodeDisplay)
-                                },
-                                // 名刺ホルダーボタンが押された時の処理
-                                onCardHolderClick = {
-                                    navController.navigate(ProfileRoutes.CardHolder)
                                 }
                             )
                         }

@@ -33,6 +33,7 @@ import java.util.concurrent.Executors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QRCodeScannerScreen(
+    modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit,
     onQRCodeScanned: (String) -> Unit
 ) {
@@ -67,39 +68,18 @@ fun QRCodeScannerScreen(
         }
     }
     
-    // Material3のScaffold（画面全体のレイアウト構造）
-    Scaffold(
-        topBar = {
-            // トップバーにタイトルと戻るボタンを配置
-            TopAppBar(
-                title = { Text("QRコードをスキャン") },
-                navigationIcon = {
-                    // 左上の戻るボタン
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "戻る"
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        // カメラ権限の状態に応じて表示内容を切り替え
+    // カメラ権限の状態に応じて表示内容を切り替え
+    Box(modifier = modifier.fillMaxSize()) {
         if (hasCameraPermission) {
             // 権限が許可されている場合：カメラプレビューを表示
             CameraPreview(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 onQRCodeDetected = onQRCodeScanned
             )
         } else {
             // 権限が未許可の場合：権限リクエスト画面を表示
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
