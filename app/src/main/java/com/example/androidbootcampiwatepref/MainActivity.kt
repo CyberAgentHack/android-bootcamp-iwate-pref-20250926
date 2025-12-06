@@ -1,6 +1,8 @@
 package com.example.androidbootcampiwatepref
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +19,9 @@ import com.example.androidbootcampiwatepref.ui.navigation.AppNavigationGraph
 import com.example.androidbootcampiwatepref.ui.screen.SplashScreen
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
 import com.example.androidbootcampiwatepref.ui.viewmodel.MainViewModel
+import com.example.androidbootcampiwatepref.util.BusinessCardSharer
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * メインアクティビティ
@@ -33,6 +38,9 @@ class MainActivity : ComponentActivity() {
         
         // ViewModelを作成
         val viewModel = MainViewModel(profileDataStore)
+        
+        // 共有インテントからの名刺受信を処理
+        handleSharedBusinessCard(intent, profileDataStore)
         
         setContent {
             // ViewModelから状態を取得
@@ -78,6 +86,94 @@ class MainActivity : ComponentActivity() {
                             currentCardDesign = currentCardDesign,
                             savedCards = savedCards
                         )
+                    }
+                }
+            }
+        }
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        
+        // 新しいインテントからの名刺受信を処理
+        val profileDataStore = ProfileDataStore(this)
+        handleSharedBusinessCard(intent, profileDataStore)
+    }
+    
+    /**
+     * 共有インテントから名刺データをインポート
+     */
+    private fun handleSharedBusinessCard(intent: Intent?, profileDataStore: ProfileDataStore) {
+        if (intent == null) return
+        
+        when (intent.action) {
+            Intent.ACTION_SEND, Intent.ACTION_VIEW -> {
+                val uri = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                uri?.let {
+                    lifecycleScope.launch {
+                        try {
+                            val businessCard = BusinessCardSharer.importBusinessCard(this@MainActivity, it)
+                            if (businessCard != null) {
+                                // 既存の名刺リストに追加
+                                val currentCards = profileDataStore.savedCardsFlow.first()
+                                val updatedCards = currentCards + businessCard
+                                profileDataStore.saveSavedCards(updatedCards)
+                                
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "名刺を受信しました: ${businessCard.nickname}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "名刺の読み込みに失敗しました",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "エラー: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+            Intent.ACTION_SEND_MULTIPLE -> {
+                val uris = intent.getParcelableArrayListExtra<android.net.Uri>(Intent.EXTRA_STREAM)
+                uris?.firstOrNull { uri ->
+                    contentResolver.getType(uri)?.contains("json") == true
+                }?.let { jsonUri ->
+                    lifecycleScope.launch {
+                        try {
+                            val businessCard = BusinessCardSharer.importBusinessCard(this@MainActivity, jsonUri)
+                            if (businessCard != null) {
+                                val currentCards = profileDataStore.savedCardsFlow.first()
+                                val updatedCards = currentCards + businessCard
+                                profileDataStore.saveSavedCards(updatedCards)
+                                
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "名刺を受信しました: ${businessCard.nickname}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "名刺の読み込みに失敗しました",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "エラー: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }
