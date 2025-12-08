@@ -41,16 +41,20 @@ object BusinessCardSharer {
             uris.add(jsonUri)
             
             // 2. プロフィール画像がある場合はコピー
+            // 画像URIからファイルを読み込み、キャッシュディレクトリに一時コピーして共有
             if (!profileImageUri.isNullOrEmpty()) {
                 try {
+                    // ContentResolverを使ってURIから画像を読み込む
                     val inputStream = context.contentResolver.openInputStream(Uri.parse(profileImageUri))
                     if (inputStream != null) {
+                        // キャッシュディレクトリに一時ファイルとして保存
                         val imageFile = File(context.cacheDir, "profile_image_${System.currentTimeMillis()}.jpg")
                         imageFile.outputStream().use { output ->
-                            inputStream.copyTo(output)
+                            inputStream.copyTo(output)  // ストリームをコピー
                         }
                         inputStream.close()
                         
+                        // FileProviderを使って共有可能なURIを生成
                         val imageUri = FileProvider.getUriForFile(
                             context,
                             "${context.packageName}.fileprovider",
@@ -60,7 +64,7 @@ object BusinessCardSharer {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // 画像のコピーに失敗してもJSONは送信
+                    // 画像のコピーに失敗してもJSONは送信（画像は必須ではない）
                 }
             }
             

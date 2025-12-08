@@ -21,6 +21,10 @@
 - **プロフィール編集** - ニックネーム、自己紹介、性別、生年月日、趣味の編集
 - **カスタム画像** - 端末から画像を選択してプロフィールアイコンに設定
 - **画像トリミング** - UCropライブラリによる高度な画像切り抜き機能
+  - 1:1アスペクト比の正方形トリミング
+  - トリミング前の元画像も保持（拡大表示用）
+  - 500x500pxにリサイズしてパフォーマンス最適化
+- **SNSリンク** - Twitter/X、Instagram、Facebook、GitHub、LinkedInのURLを設定
 - **保存ボタン改善** - TopAppBarに配置され、常に表示
 
 ### ⚙️ システム機能
@@ -38,13 +42,13 @@
 app/src/main/java/com/example/androidbootcampiwatepref/
 ├── MainActivity.kt                    # メインアクティビティ（エントリーポイント）
 ├── data/
-│   └── ProfileDataStore.kt           # データ永続化層（プロフィール、名刺ホルダー）
+│   └── ProfileDataStore.kt           # データ永続化層（プロフィール、SNS URL、画像URI、名刺ホルダー）
 ├── domain/
 │   └── model/
 │       ├── AppTheme.kt               # テーマEnum
 │       ├── AppFont.kt                # フォントEnum（FontFamilyプロパティ付き）
 │       ├── CardDesign.kt             # カードデザインEnum（6種類）
-│       ├── ProfileData.kt            # プロフィールデータモデル
+│       ├── ProfileData.kt            # プロフィールデータモデル（SNS URLフィールド含む）
 │       └── BusinessCardData.kt       # 名刺データモデル（QRコード用）
 ├── navigation/
 │   └── ProfileRoutes.kt              # ナビゲーションルート定義
@@ -87,7 +91,7 @@ app/src/main/java/com/example/androidbootcampiwatepref/
 - **ナビゲーション**: Navigation Compose with Type-Safe Routes
 - **データ永続化**: DataStore (Preferences)
 - **非同期処理**: Kotlin Coroutines & Flow
-- **画像処理**: Coil (画像読み込み), UCrop (トリミング)
+- **画像処理**: Coil (画像読み込み), UCrop (高度な画像トリミング - アスペクト比設定、リサイズ対応）
 - **QRコード**: ZXing (生成), MLKit Barcode Scanning (読み取り)
 - **カメラ**: CameraX (プレビュー、画像解析)
 - **ビルドツール**: Gradle (Kotlin DSL)
@@ -174,6 +178,8 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
 
 - アプリ起動時に表示される画面
 - **名刺をタップして反転** - 表面と裏面をフリップアニメーションで切り替え
+- **プロフィール画像をタップ** - 元画像（トリミング前）を拡大表示
+- **SNSアイコン** - 裏面にSNSリンクアイコンを表示（タップでブラウザで開く）
 - 右上の編集アイコンで編集画面へ遷移
 - 右上の歯車アイコンで設定画面へ遷移
 - 右上のQRコードアイコンで自分のQRコード表示画面へ遷移
@@ -194,6 +200,12 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
    - 性別 (男性/女性/回答しない)
    - 生年月日 (DatePickerから選択)
    - 趣味・興味（「+」ボタンで追加、タグをタップして削除）
+   - **SNS・リンク** - 各SNSプラットフォームのURLを入力
+     - Twitter/X (https://x.com/username)
+     - Instagram (https://instagram.com/username)
+     - Facebook (https://facebook.com/username)
+     - GitHub (https://github.com/username)
+     - LinkedIn (https://linkedin.com/in/username)
 
 4. **保存**
    - 「保存」ボタンで保存して閲覧画面へ戻る
@@ -400,6 +412,113 @@ import androidx.compose.runtime.*
 Android Studioの自動フォーマット機能を使用:
 - `Ctrl + Alt + L` (Windows/Linux)
 - `Cmd + Option + L` (Mac)
+
+## 🔧 コード品質と技術的負債
+
+### 現在のファイル構成
+
+プロジェクトは適切なコンポーネント分割により、保守性の高い構造を維持しています:
+
+| ファイル名 | 行数 | 状態 | 主な責務 |
+|-----------|------|------|---------|
+| `ProfileEditScreen.kt` | 610行 | ✅ 改善済み | プロフィール編集UI（メイン構造） |
+| `ProfileDataStore.kt` | 531行 | ⚠️ 許容範囲 | 全データの永続化管理 |
+| `ProfileViewScreen.kt` | 498行 | ⚠️ やや大きい | プロフィール閲覧UI |
+| `CardDetailScreen.kt` | 405行 | ✅ 許容範囲 | 名刺詳細表示 |
+| `QRCodeScannerScreen.kt` | 405行 | ✅ 許容範囲 | QRスキャナー |
+| `SnsLinksEditor.kt` | 146行 | ✅ 適切 | SNSリンク入力フォーム |
+| `HobbiesEditor.kt` | 108行 | ✅ 適切 | 趣味入力コンポーネント |
+
+### 実施済みリファクタリング
+
+#### ✅ ProfileEditScreen.kt のコンポーネント分割（完了）
+
+**改善内容:**
+- 735行 → 610行（約17%削減）
+- SNSリンク入力と趣味入力を独立したコンポーネントに分離
+
+**実装されたコンポーネント:**
+```
+ProfileEditScreen.kt (メインUI - 610行)
+├── SnsLinksEditor.kt (SNSリンク入力 - 146行) ✅ 新規作成
+└── HobbiesEditor.kt (趣味入力 - 108行) ✅ 新規作成
+```
+
+**達成されたメリット:**
+- ✅ 各コンポーネントの独立性向上
+- ✅ テストしやすい小さな単位に分割
+- ✅ 再利用性の向上
+- ✅ コードの可読性とメンテナンス性が向上
+
+### 今後のリファクタリング候補
+
+#### 1. ProfileEditScreen.kt のさらなる改善（オプション）
+
+**現状:** 610行（許容範囲内）
+
+**追加改善案（必要に応じて）:**
+```
+ProfileEditScreen.kt (メインUI - 400行)
+├── ProfileImageEditor.kt (画像選択・トリミング処理 - 150行)
+└── BasicInfoEditor.kt (基本情報編集 - 150行)
+```
+
+#### 2. ProfileDataStore.kt (531行) の分割案
+
+**現状の問題:**
+- プロフィール、設定、名刺、画像URIなど、すべてのデータ管理が1クラスに集中
+- 単一責任の原則に反する
+
+**改善案:**
+```
+data/
+├── ProfileDataStore.kt (プロフィール基本情報のみ - 200行)
+├── SettingsDataStore.kt (テーマ、フォント、カードデザイン - 100行)
+├── SnsLinksDataStore.kt (SNS URL管理 - 100行)
+├── ImageDataStore.kt (画像URI管理 - 80行)
+└── BusinessCardDataStore.kt (名刺ホルダー管理 - 100行)
+```
+
+**メリット:**
+- 責務の明確化
+- 変更の影響範囲の最小化
+- 並行開発がしやすい
+
+#### 3. ProfileViewScreen.kt (498行) の分割案
+
+**現状の問題:**
+- 名刺表示、フリップアニメーション、SNSリンク表示が混在
+
+**改善案:**
+```
+ProfileViewScreen.kt (メインUI - 150行)
+├── BusinessCardFrontComponent.kt (表面コンポーネント - 100行)
+├── BusinessCardBackComponent.kt (裏面コンポーネント - 150行)
+└── SnsLinksDisplay.kt (SNSリンク表示 - 100行)
+```
+
+### ベストプラクティス
+
+**ファイルサイズの目安:**
+- ✅ **100行以下**: 理想的
+- ✅ **100-300行**: 許容範囲
+- ⚠️ **300-500行**: リファクタリング検討
+- 🔴 **500行以上**: 分割を推奨
+
+**分割の判断基準:**
+1. 単一責任の原則に従っているか
+2. テストしやすいか
+3. 他のコンポーネントから独立しているか
+4. 再利用可能か
+
+### 技術的負債の管理
+
+現時点では、アプリは正常に動作し、機能追加も可能な状態です。ただし、将来的な保守性向上のため、以下のタイミングでリファクタリングを検討することを推奨します:
+
+- 新しい大きな機能を追加する前
+- バグ修正が困難になってきた時
+- テストコードの追加時
+- チーム開発を開始する前
 
 ---
 

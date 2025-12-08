@@ -47,12 +47,52 @@ class MainViewModel(
         initialValue = emptyList()
     )
     
+    // SNS URL関連のStateFlow（DataStoreから取得し、UI層で購読可能な状態に変換）
+    // WhileSubscribed(5000): 購読者がいなくなってから5秒後にFlowを停止（リソース最適化）
+    
+    // Twitter/X URL
+    val twitterUrl = profileDataStore.twitterUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // Instagram URL
+    val instagramUrl = profileDataStore.instagramUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // Facebook URL
+    val facebookUrl = profileDataStore.facebookUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // GitHub URL
+    val githubUrl = profileDataStore.githubUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // LinkedIn URL
+    val linkedinUrl = profileDataStore.linkedinUrlFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // プロフィール画像URI（トリミング済み）
     val profileImageUri = profileDataStore.profileImageUriFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = ""
     )
     
+    // プロフィール画像の元画像URI（トリミング前の高解像度画像、拡大表示用）
     val profileImageOriginalUri = profileDataStore.profileImageOriginalUriFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -90,19 +130,32 @@ class MainViewModel(
     )
     
     // 計算プロパティ: ProfileData
+    // 複数のFlowを結合して単一のProfileDataオブジェクトを生成
+    // combine演算子: いずれかのFlowが更新されると新しいProfileDataが生成される
+    // SNS URL（twitterUrl, instagramUrl, facebookUrl, githubUrl, linkedinUrl）も含めて管理
     val profileData: StateFlow<ProfileData> = combine(
         nickname,
         bio,
         genderIndex,
         birthDateMillis,
-        hobbies
-    ) { nickname, bio, genderIndex, birthDateMillis, hobbies ->
+        hobbies,
+        twitterUrl,        // Twitter/X URL
+        instagramUrl,     // Instagram URL
+        facebookUrl,      // Facebook URL
+        githubUrl,        // GitHub URL
+        linkedinUrl       // LinkedIn URL
+    ) { flows ->
         ProfileData(
-            nickname = nickname,
-            bio = bio,
-            genderIndex = genderIndex,
-            birthDateMillis = birthDateMillis,
-            hobbies = hobbies
+            nickname = flows[0] as String,
+            bio = flows[1] as String,
+            genderIndex = flows[2] as Int,
+            birthDateMillis = flows[3] as Long?,
+            hobbies = flows[4] as List<String>,
+            twitterUrl = flows[5] as String,      // SNS URLをProfileDataに含める
+            instagramUrl = flows[6] as String,
+            facebookUrl = flows[7] as String,
+            githubUrl = flows[8] as String,
+            linkedinUrl = flows[9] as String
         )
     }.stateIn(
         scope = viewModelScope,

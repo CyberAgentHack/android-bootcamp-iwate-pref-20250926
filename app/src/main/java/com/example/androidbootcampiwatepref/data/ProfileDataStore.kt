@@ -44,6 +44,11 @@ class ProfileDataStore(private val context: Context) {
         private val GENDER_INDEX_KEY = intPreferencesKey("gender_index")     // 性別インデックス（0:男性、1:女性、2:その他）
         private val BIRTH_DATE_KEY = longPreferencesKey("birth_date_millis") // 誕生日（エポックミリ秒）
         private val HOBBIES_KEY = stringPreferencesKey("hobbies")           // 趣味リスト（カンマ区切りで保存）
+        private val TWITTER_URL_KEY = stringPreferencesKey("twitter_url")   // Twitter/X URL
+        private val INSTAGRAM_URL_KEY = stringPreferencesKey("instagram_url") // Instagram URL
+        private val FACEBOOK_URL_KEY = stringPreferencesKey("facebook_url")   // Facebook URL
+        private val GITHUB_URL_KEY = stringPreferencesKey("github_url")       // GitHub URL
+        private val LINKEDIN_URL_KEY = stringPreferencesKey("linkedin_url")   // LinkedIn URL
         private val THEME_KEY = stringPreferencesKey("theme")               // テーマ設定
         private val FONT_KEY = stringPreferencesKey("font")                 // フォント設定
         private val CARD_DESIGN_KEY = stringPreferencesKey("card_design")   // 名刺デザイン設定
@@ -184,6 +189,110 @@ class ProfileDataStore(private val context: Context) {
         }
     }
     
+    // --- SNS URL関連 ---
+    // 各SNSプラットフォームのプロフィールURLを保存・取得する機能
+    // ユーザーが入力したURLをDataStoreに永続化し、名刺に表示する
+    
+    /**
+     * Twitter/X URLを保存
+     * 
+     * @param url Twitter/XのプロフィールURL（例: https://x.com/username）
+     */
+    suspend fun saveTwitterUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TWITTER_URL_KEY] = url
+        }
+    }
+    
+    /**
+     * Twitter/X URLを取得（Flow）
+     * 
+     * @return Twitter/XのURL、未設定の場合は空文字列
+     */
+    val twitterUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[TWITTER_URL_KEY] ?: ""
+    }
+    
+    /**
+     * Instagram URLを保存
+     * 
+     * @param url InstagramのプロフィールURL（例: https://instagram.com/username）
+     */
+    suspend fun saveInstagramUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[INSTAGRAM_URL_KEY] = url
+        }
+    }
+    
+    /**
+     * Instagram URLを取得（Flow）
+     * 
+     * @return InstagramのURL、未設定の場合は空文字列
+     */
+    val instagramUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[INSTAGRAM_URL_KEY] ?: ""
+    }
+    
+    /**
+     * Facebook URLを保存
+     * 
+     * @param url FacebookのプロフィールURL（例: https://facebook.com/username）
+     */
+    suspend fun saveFacebookUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[FACEBOOK_URL_KEY] = url
+        }
+    }
+    
+    /**
+     * Facebook URLを取得（Flow）
+     * 
+     * @return FacebookのURL、未設定の場合は空文字列
+     */
+    val facebookUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[FACEBOOK_URL_KEY] ?: ""
+    }
+    
+    /**
+     * GitHub URLを保存
+     * 
+     * @param url GitHubのプロフィールURL（例: https://github.com/username）
+     */
+    suspend fun saveGithubUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[GITHUB_URL_KEY] = url
+        }
+    }
+    
+    /**
+     * GitHub URLを取得（Flow）
+     * 
+     * @return GitHubのURL、未設定の場合は空文字列
+     */
+    val githubUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[GITHUB_URL_KEY] ?: ""
+    }
+    
+    /**
+     * LinkedIn URLを保存
+     * 
+     * @param url LinkedInのプロフィールURL（例: https://linkedin.com/in/username）
+     */
+    suspend fun saveLinkedinUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[LINKEDIN_URL_KEY] = url
+        }
+    }
+    
+    /**
+     * LinkedIn URLを取得（Flow）
+     * 
+     * @return LinkedInのURL、未設定の場合は空文字列
+     */
+    val linkedinUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[LINKEDIN_URL_KEY] ?: ""
+    }
+    
     // --- テーマ設定関連 ---
     
     /**
@@ -241,13 +350,23 @@ class ProfileDataStore(private val context: Context) {
      * @param genderIndex 性別インデックス
      * @param birthDateMillis 生年月日（エポックミリ秒）、nullの場合はキーを削除
      * @param hobbies 趣味リスト
+     * @param twitterUrl Twitter/X URL
+     * @param instagramUrl Instagram URL
+     * @param facebookUrl Facebook URL
+     * @param githubUrl GitHub URL
+     * @param linkedinUrl LinkedIn URL
      */
     suspend fun saveProfileData(
         nickname: String,
         bio: String,
         genderIndex: Int,
         birthDateMillis: Long?,
-        hobbies: List<String>
+        hobbies: List<String>,
+        twitterUrl: String = "",
+        instagramUrl: String = "",
+        facebookUrl: String = "",
+        githubUrl: String = "",
+        linkedinUrl: String = ""
     ) {
         // 単一のedit操作で全データを更新
         // これによりDataStoreへの書き込みが1回で完了し、効率的
@@ -265,6 +384,13 @@ class ProfileDataStore(private val context: Context) {
             
             // 趣味リストをカンマ区切り文字列に変換して保存
             preferences[HOBBIES_KEY] = hobbies.joinToString(",")
+            
+            // SNS URLを保存
+            preferences[TWITTER_URL_KEY] = twitterUrl
+            preferences[INSTAGRAM_URL_KEY] = instagramUrl
+            preferences[FACEBOOK_URL_KEY] = facebookUrl
+            preferences[GITHUB_URL_KEY] = githubUrl
+            preferences[LINKEDIN_URL_KEY] = linkedinUrl
         }
     }
     

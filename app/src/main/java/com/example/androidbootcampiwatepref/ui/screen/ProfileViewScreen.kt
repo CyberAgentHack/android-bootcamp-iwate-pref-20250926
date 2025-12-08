@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +20,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
 import coil.compose.AsyncImage
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
@@ -354,6 +354,114 @@ fun BusinessCardBack(
                             onClick = {},
                             label = { Text(hobby) }
                         )
+                    }
+                }
+            }
+        }
+        
+        // SNSリンク表示セクション
+        // 登録されているSNS URLがある場合のみ表示
+        val context = LocalContext.current
+        // いずれかのSNS URLが設定されているかチェック
+        val hasSnsLinks = profileData.twitterUrl.isNotEmpty() || 
+                         profileData.instagramUrl.isNotEmpty() || 
+                         profileData.facebookUrl.isNotEmpty() || 
+                         profileData.githubUrl.isNotEmpty() || 
+                         profileData.linkedinUrl.isNotEmpty()
+        
+        if (hasSnsLinks) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Column {
+                Text(
+                    text = "🔗 SNS・リンク",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = cardDesign.backTextColor.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // SNSアイコンを横並びで表示
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Twitter/X アイコン（URLが設定されている場合のみ表示）
+                    if (profileData.twitterUrl.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                // ブラウザでTwitter/XのプロフィールURLを開く
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.twitterUrl))
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = "Twitter/X",
+                                tint = cardDesign.backTextColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                    if (profileData.instagramUrl.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.instagramUrl))
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = "Instagram",
+                                tint = cardDesign.backTextColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                    if (profileData.facebookUrl.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.facebookUrl))
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = "Facebook",
+                                tint = cardDesign.backTextColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                    if (profileData.githubUrl.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.githubUrl))
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = "GitHub",
+                                tint = cardDesign.backTextColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                    if (profileData.linkedinUrl.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.linkedinUrl))
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Work,
+                                contentDescription = "LinkedIn",
+                                tint = cardDesign.backTextColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                 }
             }

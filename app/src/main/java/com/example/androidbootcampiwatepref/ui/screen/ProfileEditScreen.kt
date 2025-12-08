@@ -38,6 +38,8 @@ import com.example.androidbootcampiwatepref.domain.model.ProfileData
 import com.example.androidbootcampiwatepref.domain.model.GENDER_OPTIONS
 import com.example.androidbootcampiwatepref.domain.model.BIRTH_DATE_FORMATTER
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
+import com.example.androidbootcampiwatepref.ui.component.HobbiesEditor
+import com.example.androidbootcampiwatepref.ui.component.SnsLinksEditor
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -72,7 +74,9 @@ fun ProfileEditScreen(
 ) {
     // 保存用の状態を管理
     var tempProfileData by remember { mutableStateOf(profileData) }
+    // トリミング後のプロフィール画像URI
     var tempProfileImageUri by remember { mutableStateOf(profileImageUri) }
+    // トリミング前の元のプロフィール画像URI（復元用）
     var tempProfileImageOriginalUri by remember { mutableStateOf<String?>(null) }
     var tempHeaderImageUri by remember { mutableStateOf(headerImageUri) }
     
@@ -164,20 +168,33 @@ fun ProfileEditContent(
     var hobbies by remember { mutableStateOf(initialProfileData.hobbies.toMutableList()) }
     var hobbyInput by remember { mutableStateOf(TextFieldValue("")) }
     
+    // SNS URL関連
+    var twitterUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.twitterUrl)) }
+    var instagramUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.instagramUrl)) }
+    var facebookUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.facebookUrl)) }
+    var githubUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.githubUrl)) }
+    var linkedinUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.linkedinUrl)) }
+    
     // 画像URI関連
+    // トリミング後のプロフィール画像URIを保持
     var currentProfileImageUri by remember { mutableStateOf(initialProfileImageUri) }
+    // トリミング前の元のプロフィール画像URI（編集前の状態を保持）
     var currentProfileImageOriginalUri by remember { mutableStateOf<String?>(null) }
     var currentHeaderImageUri by remember { mutableStateOf(initialHeaderImageUri) }
+    // プロフィール画像とヘッダー画像のどちらを編集中か判定するフラグ
     var isSelectingProfileImage by remember { mutableStateOf(false) }
     
-    // UCrop結果を受け取るランチャー
+    // UCrop（画像トリミングライブラリ）の結果を受け取るランチャー
+    // トリミング完了後にトリミング済み画像のURIを取得して状態を更新
     val cropImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
             result.data?.let { intent ->
+                // UCropからトリミング済み画像のURIを取得
                 val resultUri = UCrop.getOutput(intent)
                 resultUri?.let { uri ->
+                    // プロフィール画像かヘッダー画像かを判定して、該当するURIを更新
                     if (isSelectingProfileImage) {
                         currentProfileImageUri = uri.toString()
                     } else {
@@ -189,15 +206,18 @@ fun ProfileEditContent(
     }
     
     // 画像選択ランチャー（プロフィール画像用）
+    // デバイスから画像を選択し、UCropでトリミング画面を起動
     val profileImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { sourceUri ->
+            // プロフィール画像選択中であることを記録
             isSelectingProfileImage = true
-            // 元画像を保存
+            // 元画像のURIを保存（後で復元できるように）
             currentProfileImageOriginalUri = sourceUri.toString()
             
             // トリミング後の画像を保存するファイルを作成
+            // キャッシュディレクトリに一時ファイルとして保存
             val destinationFile = File(context.cacheDir, "cropped_profile_${System.currentTimeMillis()}.jpg")
             val destinationUri = FileProvider.getUriForFile(
                 context,
@@ -207,8 +227,8 @@ fun ProfileEditContent(
             
             // UCropを使用してトリミング画面を起動
             val uCropIntent = UCrop.of(sourceUri, destinationUri)
-                .withAspectRatio(1f, 1f) // 正方形（1:1）
-                .withMaxResultSize(500, 500) // 最大サイズ
+                .withAspectRatio(1f, 1f) // アスペクト比を正方形（1:1）に設定
+                .withMaxResultSize(500, 500) // トリミング後の最大サイズを500x500pxに制限
                 .getIntent(context)
             
             cropImageLauncher.launch(uCropIntent)
@@ -222,16 +242,26 @@ fun ProfileEditContent(
     var isFirstComposition by remember { mutableStateOf(true) }
     
     // データ変更を通知（初回はスキップ）
-    LaunchedEffect(nickname.text, bio.text, selectedGenderIndex, selectedDateMillis, hobbies.toList(), currentProfileImageUri, currentHeaderImageUri) {
+    // LaunchedEffect: 監視対象の値が変更されるたびに実行される副作用
+    // SNS URLフィールド（twitterUrl, instagramUrl, facebookUrl, githubUrl, linkedinUrl）も含めて監視
+    LaunchedEffect(nickname.text, bio.text, selectedGenderIndex, selectedDateMillis, hobbies.toList(), twitterUrl.text, instagramUrl.text, facebookUrl.text, githubUrl.text, linkedinUrl.text, currentProfileImageUri, currentHeaderImageUri) {
         if (isFirstComposition) {
+            // 初回のCompose時は通知をスキップ（初期値の設定による不要な通知を防ぐ）
             isFirstComposition = false
         } else {
+            // 2回目以降は、変更された値で新しいProfileDataを作成し親に通知
             val updatedData = ProfileData(
                 nickname = nickname.text,
                 bio = bio.text,
                 genderIndex = selectedGenderIndex,
                 birthDateMillis = selectedDateMillis,
-                hobbies = hobbies
+                hobbies = hobbies,
+                // SNS URLフィールドを追加
+                twitterUrl = twitterUrl.text,
+                instagramUrl = instagramUrl.text,
+                facebookUrl = facebookUrl.text,
+                githubUrl = githubUrl.text,
+                linkedinUrl = linkedinUrl.text
             )
             onDataChange(updatedData, currentProfileImageUri, currentProfileImageOriginalUri, currentHeaderImageUri)
         }
@@ -286,6 +316,16 @@ fun ProfileEditContent(
                             hobbyInput = hobbyInput,
                             onHobbyInputChange = { hobbyInput = it },
                             cardDesign = cardDesign,
+                            twitterUrl = twitterUrl,
+                            onTwitterUrlChange = { twitterUrl = it },
+                            instagramUrl = instagramUrl,
+                            onInstagramUrlChange = { instagramUrl = it },
+                            facebookUrl = facebookUrl,
+                            onFacebookUrlChange = { facebookUrl = it },
+                            githubUrl = githubUrl,
+                            onGithubUrlChange = { githubUrl = it },
+                            linkedinUrl = linkedinUrl,
+                            onLinkedinUrlChange = { linkedinUrl = it },
                             onAddHobby = {
                                 if (hobbyInput.text.isNotBlank()) {
                                     hobbies.add(hobbyInput.text)
@@ -374,7 +414,8 @@ fun EditCardFront(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // アイコン（タップで変更）
+        // プロフィールアイコン（タップで画像を変更可能）
+        // タップすると画像選択→トリミング画面に遷移
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -458,6 +499,16 @@ fun EditCardBack(
     hobbyInput: TextFieldValue,
     onHobbyInputChange: (TextFieldValue) -> Unit,
     cardDesign: com.example.androidbootcampiwatepref.domain.model.CardDesign,
+    twitterUrl: TextFieldValue,
+    onTwitterUrlChange: (TextFieldValue) -> Unit,
+    instagramUrl: TextFieldValue,
+    onInstagramUrlChange: (TextFieldValue) -> Unit,
+    facebookUrl: TextFieldValue,
+    onFacebookUrlChange: (TextFieldValue) -> Unit,
+    githubUrl: TextFieldValue,
+    onGithubUrlChange: (TextFieldValue) -> Unit,
+    linkedinUrl: TextFieldValue,
+    onLinkedinUrlChange: (TextFieldValue) -> Unit,
     onAddHobby: () -> Unit,
     onRemoveHobby: (Int) -> Unit
 ) {
@@ -529,63 +580,31 @@ fun EditCardBack(
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        // 趣味入力
-        Text(
-            "🎨 趣味・興味",
-            style = MaterialTheme.typography.labelMedium,
-            color = cardDesign.backTextColor.copy(alpha = 0.8f)
+        // 趣味入力コンポーネント
+        HobbiesEditor(
+            hobbies = hobbies,
+            hobbyInput = hobbyInput,
+            onHobbyInputChange = onHobbyInputChange,
+            onAddHobby = onAddHobby,
+            onRemoveHobby = onRemoveHobby,
+            textColor = cardDesign.backTextColor
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = hobbyInput,
-                onValueChange = onHobbyInputChange,
-                label = { Text("追加", color = cardDesign.backTextColor.copy(alpha = 0.7f)) },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodySmall.copy(color = cardDesign.backTextColor),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = cardDesign.backTextColor,
-                    unfocusedTextColor = cardDesign.backTextColor,
-                    focusedBorderColor = cardDesign.backTextColor,
-                    unfocusedBorderColor = cardDesign.backTextColor.copy(alpha = 0.5f)
-                )
-            )
-            IconButton(onClick = onAddHobby) {
-                Icon(Icons.Default.Add, contentDescription = "追加", modifier = Modifier.size(20.dp))
-            }
-        }
         
-        // 趣味リスト
-        if (hobbies.isNotEmpty()) {
-            @OptIn(ExperimentalLayoutApi::class)
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                hobbies.forEachIndexed { index, hobby ->
-                    SuggestionChip(
-                        onClick = { onRemoveHobby(index) },
-                        label = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(hobby, style = MaterialTheme.typography.bodySmall)
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "削除",
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // SNSリンク入力コンポーネント
+        SnsLinksEditor(
+            twitterUrl = twitterUrl,
+            onTwitterUrlChange = onTwitterUrlChange,
+            instagramUrl = instagramUrl,
+            onInstagramUrlChange = onInstagramUrlChange,
+            facebookUrl = facebookUrl,
+            onFacebookUrlChange = onFacebookUrlChange,
+            githubUrl = githubUrl,
+            onGithubUrlChange = onGithubUrlChange,
+            linkedinUrl = linkedinUrl,
+            onLinkedinUrlChange = onLinkedinUrlChange,
+            textColor = cardDesign.backTextColor
+        )
     }
 }

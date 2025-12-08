@@ -37,6 +37,11 @@ fun QRCodeDisplayScreen(
     hobbies: List<String>,
     cardDesign: String,
     profileImageUri: String?,
+    twitterUrl: String,
+    instagramUrl: String,
+    facebookUrl: String,
+    githubUrl: String,
+    linkedinUrl: String,
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit
 ) {
@@ -53,7 +58,12 @@ fun QRCodeDisplayScreen(
         birthDateMillis = birthDateMillis,
         hobbies = hobbies,
         cardDesign = cardDesign,
-        profileImageUri = null  // 画像は含めない
+        profileImageUri = null,  // 画像は含めない
+        twitterUrl = twitterUrl,
+        instagramUrl = instagramUrl,
+        facebookUrl = facebookUrl,
+        githubUrl = githubUrl,
+        linkedinUrl = linkedinUrl
     )
     
     // 名刺データをJSON化してQRコード画像を生成

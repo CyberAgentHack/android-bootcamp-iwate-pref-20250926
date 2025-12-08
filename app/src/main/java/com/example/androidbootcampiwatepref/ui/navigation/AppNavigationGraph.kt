@@ -183,6 +183,11 @@ fun AppNavigationGraph(
                     hobbies = profileData.hobbies,
                     cardDesign = currentCardDesign.name,
                     profileImageUri = profileImageUri,
+                    twitterUrl = profileData.twitterUrl,
+                    instagramUrl = profileData.instagramUrl,
+                    facebookUrl = profileData.facebookUrl,
+                    githubUrl = profileData.githubUrl,
+                    linkedinUrl = profileData.linkedinUrl,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToScanner = { navController.navigate(ProfileRoutes.QRCodeScanner) }
                 )

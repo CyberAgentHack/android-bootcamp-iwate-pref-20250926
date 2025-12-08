@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
@@ -261,6 +262,106 @@ private fun ReceivedCardBack(
                                 color = cardDesign.backTextColor,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             )
+                        }
+                    }
+                }
+            }
+            
+            // SNS Links
+            val context = LocalContext.current
+            val hasSnsLinks = card.twitterUrl.isNotEmpty() || 
+                             card.instagramUrl.isNotEmpty() || 
+                             card.facebookUrl.isNotEmpty() || 
+                             card.githubUrl.isNotEmpty() || 
+                             card.linkedinUrl.isNotEmpty()
+            
+            if (hasSnsLinks) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "SNS・リンク",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = cardDesign.backTextColor.copy(alpha = 0.7f)
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (card.twitterUrl.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.twitterUrl))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Tag,
+                                    contentDescription = "Twitter/X",
+                                    tint = cardDesign.backTextColor,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        if (card.instagramUrl.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.instagramUrl))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Camera,
+                                    contentDescription = "Instagram",
+                                    tint = cardDesign.backTextColor,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        if (card.facebookUrl.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.facebookUrl))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ThumbUp,
+                                    contentDescription = "Facebook",
+                                    tint = cardDesign.backTextColor,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        if (card.githubUrl.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.githubUrl))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Code,
+                                    contentDescription = "GitHub",
+                                    tint = cardDesign.backTextColor,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        if (card.linkedinUrl.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.linkedinUrl))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Work,
+                                    contentDescription = "LinkedIn",
+                                    tint = cardDesign.backTextColor,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
                         }
                     }
                 }
