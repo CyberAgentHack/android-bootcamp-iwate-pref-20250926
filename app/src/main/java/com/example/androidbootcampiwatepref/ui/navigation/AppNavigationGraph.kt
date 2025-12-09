@@ -137,7 +137,13 @@ fun AppNavigationGraph(
                                 bio = updatedData.bio,
                                 genderIndex = updatedData.genderIndex,
                                 birthDateMillis = updatedData.birthDateMillis,
-                                hobbies = updatedData.hobbies
+                                hobbies = updatedData.hobbies,
+                                twitterUrl = updatedData.twitterUrl,
+                                instagramUrl = updatedData.instagramUrl,
+                                facebookUrl = updatedData.facebookUrl,
+                                lineUrl = updatedData.lineUrl,
+                                phoneNumber = updatedData.phoneNumber,
+                                email = updatedData.email
                             )
                             profileDataStore.saveProfileImageUri(newProfileImageUri)
                             profileDataStore.saveProfileImageOriginalUri(newProfileImageOrigUri)
@@ -186,8 +192,9 @@ fun AppNavigationGraph(
                     twitterUrl = profileData.twitterUrl,
                     instagramUrl = profileData.instagramUrl,
                     facebookUrl = profileData.facebookUrl,
-                    githubUrl = profileData.githubUrl,
-                    linkedinUrl = profileData.linkedinUrl,
+                    lineUrl = profileData.lineUrl,
+                    phoneNumber = profileData.phoneNumber,
+                    email = profileData.email,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToScanner = { navController.navigate(ProfileRoutes.QRCodeScanner) }
                 )

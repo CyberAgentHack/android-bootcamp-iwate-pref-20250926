@@ -23,9 +23,16 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
+import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
+import com.example.androidbootcampiwatepref.ui.component.ContactInfoDisplay
 
 /**
  * 受け取った名刺の詳細表示画面
@@ -100,7 +107,7 @@ fun CardDetailScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()  // 横幅いっぱい
-                    .aspectRatio(1.6f)  // 縦横比1.6（名刺の一般的な比率）
+                    .aspectRatio(0.63f)  // 縦横比0.63（プロフィール画面と同じ名刺比率）
                     .graphicsLayer {
                         // Y軸回転で反転アニメーション
                         rotationY = rotation
@@ -153,46 +160,58 @@ private fun ReceivedCardFront(
             verticalArrangement = Arrangement.Center,  // 縦方向中央
             horizontalAlignment = Alignment.CenterHorizontally  // 横方向中央
         ) {
-            // プロフィール画像（アイコン） - デフォルトアイコンのみ
-            if (!card.profileImageUri.isNullOrEmpty()) {
-                // 機能拡張用: 将来的に画像表示を追加可能
-                // 現在はデフォルトアイコンを表示
+            // プロフィール画像 - プロフィール画面と同じ140dp
+            if (!card.profileImageUri.isNullOrEmpty() && card.profileImageUri.isNotBlank()) {
+                AsyncImage(
+                    model = card.profileImageUri,
+                    contentDescription = "プロフィール画像",
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
                 // デフォルトアイコン（画像がない場合）
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(140.dp)
                         .clip(CircleShape)
-                        .background(cardDesign.frontTextColor.copy(alpha = 0.2f))
-                        .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.5f), CircleShape),
+                        .background(cardDesign.frontTextColor.copy(alpha = 0.1f))
+                        .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.3f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "デフォルトアイコン",
-                        modifier = Modifier.size(60.dp),
-                        tint = cardDesign.frontTextColor.copy(alpha = 0.7f)
+                        modifier = Modifier.size(80.dp),
+                        tint = cardDesign.frontTextColor.copy(alpha = 0.5f)
                     )
                 }
             }
             
             // 間隔
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
-            // ニックネーム（大きめの表示）
+            // ニックネーム - プロフィール画面と同じスタイル
             Text(
                 text = card.nickname,
-                style = MaterialTheme.typography.displaySmall,  // 大きい見出しスタイル
-                color = cardDesign.frontTextColor
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                color = cardDesign.frontTextColor,
+                letterSpacing = 0.5.sp
             )
             
             // 間隔
             Spacer(modifier = Modifier.height(16.dp))
             
-            // 自己紹介
+            // 自己紹介 - プロフィール画面と同じスタイル
             Text(
                 text = card.bio,
                 style = MaterialTheme.typography.bodyLarge,
-                color = cardDesign.frontTextColor.copy(alpha = 0.9f)  // 少し薄い色
+                color = cardDesign.frontTextColor.copy(alpha = 0.9f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 24.sp
             )
         }
     }
@@ -215,7 +234,7 @@ private fun ReceivedCardBack(
             // 裏面は180度回転させて正しい向きにする
             .graphicsLayer { rotationY = 180f }
             .background(brush = cardDesign.backBrush)
-            .padding(32.dp)
+            .padding(16.dp)
     ) {
         // 詳細情報を縦に並べて表示
         Column(
@@ -223,7 +242,8 @@ private fun ReceivedCardBack(
             verticalArrangement = Arrangement.spacedBy(16.dp)  // 各項目間の間隔
         ) {
             // 性別情報（必須項目）
-            InfoItem(
+            InfoItemWithIcon(
+                icon = "⚥",
                 label = "性別",
                 value = card.gender,
                 textColor = cardDesign.backTextColor
@@ -231,7 +251,8 @@ private fun ReceivedCardBack(
             
             // 生年月日（ある場合のみ表示）
             card.birthDate?.let { date ->
-                InfoItem(
+                InfoItemWithIcon(
+                    icon = "🎂",
                     label = "生年月日",
                     value = date,
                     textColor = cardDesign.backTextColor
@@ -243,11 +264,12 @@ private fun ReceivedCardBack(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 趣味セクションのタイトル
+                    // 趣味セクションのタイトル - プロフィールと統一
                     Text(
-                        text = "趣味・興味",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = cardDesign.backTextColor.copy(alpha = 0.7f)
+                        text = "🎨 趣味・興味",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = cardDesign.backTextColor.copy(alpha = 0.9f)
                     )
                     
                     // 各趣味をタグのように表示
@@ -267,13 +289,23 @@ private fun ReceivedCardBack(
                 }
             }
             
-            // SNS Links
+            // Contact Info
             val context = LocalContext.current
+            val hasContactInfo = card.phoneNumber.isNotEmpty() || card.email.isNotEmpty()
+            
+            if (hasContactInfo) {
+                ContactInfoDisplay(
+                    phoneNumber = card.phoneNumber,
+                    email = card.email,
+                    textColor = cardDesign.backTextColor
+                )
+            }
+            
+            // SNS Links
             val hasSnsLinks = card.twitterUrl.isNotEmpty() || 
                              card.instagramUrl.isNotEmpty() || 
                              card.facebookUrl.isNotEmpty() || 
-                             card.githubUrl.isNotEmpty() || 
-                             card.linkedinUrl.isNotEmpty()
+                             card.lineUrl.isNotEmpty()
             
             if (hasSnsLinks) {
                 Column(
@@ -333,31 +365,16 @@ private fun ReceivedCardBack(
                                 )
                             }
                         }
-                        if (card.githubUrl.isNotEmpty()) {
+                        if (card.lineUrl.isNotEmpty()) {
                             IconButton(
                                 onClick = {
-                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.githubUrl))
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.lineUrl))
                                     context.startActivity(intent)
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Code,
-                                    contentDescription = "GitHub",
-                                    tint = cardDesign.backTextColor,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
-                        if (card.linkedinUrl.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(card.linkedinUrl))
-                                    context.startActivity(intent)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Work,
-                                    contentDescription = "LinkedIn",
+                                    imageVector = Icons.Default.Chat,
+                                    contentDescription = "LINE",
                                     tint = cardDesign.backTextColor,
                                     modifier = Modifier.size(28.dp)
                                 )
@@ -366,6 +383,51 @@ private fun ReceivedCardBack(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * 情報アイテム表示用のコンポーネント（アイコン付き）
+ * 
+ * プロフィール画面と同じスタイルで表示
+ * 
+ * @param icon 絵文字アイコン
+ * @param label ラベル文字列
+ * @param value 値文字列
+ * @param textColor テキストの基本色
+ */
+@Composable
+private fun InfoItemWithIcon(
+    icon: String,
+    label: String,
+    value: String,
+    textColor: androidx.compose.ui.graphics.Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = icon,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.width(40.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = textColor.copy(alpha = 0.7f),
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+            )
         }
     }
 }

@@ -19,10 +19,8 @@ import androidx.compose.ui.unit.dp
  * @param onInstagramUrlChange Instagram URL変更時のコールバック
  * @param facebookUrl Facebook URL
  * @param onFacebookUrlChange Facebook URL変更時のコールバック
- * @param githubUrl GitHub URL
- * @param onGithubUrlChange GitHub URL変更時のコールバック
- * @param linkedinUrl LinkedIn URL
- * @param onLinkedinUrlChange LinkedIn URL変更時のコールバック
+ * @param lineUrl LINE URL
+ * @param onLineUrlChange LINE URL変更時のコールバック
  * @param textColor テキストカラー（カードデザインに応じて変更）
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,10 +32,8 @@ fun SnsLinksEditor(
     onInstagramUrlChange: (TextFieldValue) -> Unit,
     facebookUrl: TextFieldValue,
     onFacebookUrlChange: (TextFieldValue) -> Unit,
-    githubUrl: TextFieldValue,
-    onGithubUrlChange: (TextFieldValue) -> Unit,
-    linkedinUrl: TextFieldValue,
-    onLinkedinUrlChange: (TextFieldValue) -> Unit,
+    lineUrl: TextFieldValue,
+    onLineUrlChange: (TextFieldValue) -> Unit,
     textColor: androidx.compose.ui.graphics.Color
 ) {
     Column {
@@ -107,31 +103,12 @@ fun SnsLinksEditor(
         
         Spacer(modifier = Modifier.height(4.dp))
         
-        // GitHub URL入力
+        // LINE URL入力
         OutlinedTextField(
-            value = githubUrl,
-            onValueChange = onGithubUrlChange,
-            label = { Text("GitHub", color = textColor.copy(alpha = 0.7f)) },
-            placeholder = { Text("https://github.com/username", color = textColor.copy(alpha = 0.5f)) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            textStyle = MaterialTheme.typography.bodySmall.copy(color = textColor),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = textColor,
-                unfocusedTextColor = textColor,
-                focusedBorderColor = textColor,
-                unfocusedBorderColor = textColor.copy(alpha = 0.5f)
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        // LinkedIn URL入力
-        OutlinedTextField(
-            value = linkedinUrl,
-            onValueChange = onLinkedinUrlChange,
-            label = { Text("LinkedIn", color = textColor.copy(alpha = 0.7f)) },
-            placeholder = { Text("https://linkedin.com/in/username", color = textColor.copy(alpha = 0.5f)) },
+            value = lineUrl,
+            onValueChange = onLineUrlChange,
+            label = { Text("LINE", color = textColor.copy(alpha = 0.7f)) },
+            placeholder = { Text("https://line.me/ti/p/username", color = textColor.copy(alpha = 0.5f)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             textStyle = MaterialTheme.typography.bodySmall.copy(color = textColor),

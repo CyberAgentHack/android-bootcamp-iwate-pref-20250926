@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "602825625802",
+    "project_id": "android-bootcamp-iwate-pref",
+    "storage_bucket": "android-bootcamp-iwate-pref.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602825625802:android:48df78c5f3ff42e9c7e433",
+        "android_client_info": {
+          "package_name": "com.example.androidbootcampiwatepref"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACy2n_uX6CofTIergQkUF-j_BJOKRj4Ro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

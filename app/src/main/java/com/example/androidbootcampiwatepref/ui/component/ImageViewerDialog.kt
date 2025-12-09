@@ -35,7 +35,7 @@ import coil.compose.AsyncImage
 @Composable
 fun ImageViewerDialog(
     imageUri: String?,
-    defaultImageRes: Int,
+    defaultImageRes: Int? = null,
     contentDescription: String,
     onDismiss: () -> Unit
 ) {
@@ -93,7 +93,7 @@ fun ImageViewerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         contentScale = ContentScale.Fit
                     )
-                } else {
+                } else if (defaultImageRes != null) {
                     // デフォルト画像を表示
                     androidx.compose.foundation.Image(
                         painter = painterResource(id = defaultImageRes),

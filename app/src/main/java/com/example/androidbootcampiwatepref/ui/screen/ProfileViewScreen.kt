@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import coil.compose.AsyncImage
@@ -27,6 +28,7 @@ import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.ProfileData
 import com.example.androidbootcampiwatepref.domain.model.GENDER_OPTIONS
 import com.example.androidbootcampiwatepref.domain.model.BIRTH_DATE_FORMATTER
+import com.example.androidbootcampiwatepref.ui.component.ContactInfoDisplay
 import com.example.androidbootcampiwatepref.domain.model.UNSET_TEXT
 import com.example.androidbootcampiwatepref.domain.model.GenderOption
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
@@ -190,7 +192,7 @@ fun ProfileViewContent(
     if (showProfileImageViewer) {
         ImageViewerDialog(
             imageUri = profileImageOriginalUri ?: profileImageUri,
-            defaultImageRes = R.drawable.ic_my_icon,
+            defaultImageRes = null,
             contentDescription = "プロフィール画像",
             onDismiss = { showProfileImageViewer = false }
         )
@@ -211,45 +213,72 @@ fun BusinessCardFront(
         modifier = Modifier
             .fillMaxSize()
             .background(cardDesign.frontBrush)
-            .padding(32.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // アイコン
+        // アイコン - 視認性向上のため140dpに拡大
         if (profileImageUri != null) {
             AsyncImage(
                 model = profileImageUri,
                 contentDescription = "プロフィール画像",
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onImageClick),
                 contentScale = ContentScale.Crop
             )
         } else {
-            Image(
-                painter = painterResource(id = R.drawable.ic_my_icon),
-                contentDescription = "プロフィール画像",
+            Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
                     .clip(CircleShape)
+                    .background(cardDesign.frontTextColor.copy(alpha = 0.1f))
+                    .border(3.dp, cardDesign.frontTextColor.copy(alpha = 0.3f), CircleShape)
                     .clickable(onClick = onImageClick),
-                contentScale = ContentScale.Crop
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "プロフィール画像",
+                    modifier = Modifier.size(80.dp),
+                    tint = cardDesign.frontTextColor.copy(alpha = 0.5f)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(20.dp))
+        
+        // ニックネーム - 視覚的階層の最上位
+        Text(
+            text = profileData.nickname.ifEmpty { "名前未設定" },
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = cardDesign.frontTextColor,
+            letterSpacing = 0.5.sp
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 自己紹介 - 表面に表示
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = profileData.bio.ifEmpty { "自己紹介未設定" },
+                style = MaterialTheme.typography.bodyLarge,
+                color = cardDesign.frontTextColor.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp
             )
         }
         
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // ニックネーム（大きく）
-        Text(
-            text = profileData.nickname.ifEmpty { "名前未設定" },
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = cardDesign.frontTextColor
-        )
-        
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(12.dp))
         
         // 裏面への案内
         Text(
@@ -276,7 +305,7 @@ fun BusinessCardBack(
         modifier = Modifier
             .fillMaxSize()
             .background(cardDesign.backBrush)
-            .padding(24.dp)
+            .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // 戻る案内
@@ -286,9 +315,18 @@ fun BusinessCardBack(
             color = cardDesign.backTextColor.copy(alpha = 0.7f)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         // 基本情報
+        InfoItem(
+            icon = "⚥",
+            label = "性別",
+            value = genderOptions[profileData.genderIndex],
+            textColor = cardDesign.backTextColor
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
         InfoItem(
             icon = "🎂",
             label = "生年月日",
@@ -298,42 +336,15 @@ fun BusinessCardBack(
             textColor = cardDesign.backTextColor
         )
         
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        InfoItem(
-            icon = "⚥",
-            label = "性別",
-            value = genderOptions[profileData.genderIndex],
-            textColor = cardDesign.backTextColor
-        )
-        
         Spacer(modifier = Modifier.height(16.dp))
         
-        // 自己紹介
-        Column {
-            Text(
-                text = "📝 自己紹介",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = cardDesign.backTextColor.copy(alpha = 0.8f)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = profileData.bio.ifEmpty { UNSET_TEXT },
-                style = MaterialTheme.typography.bodyMedium,
-                color = cardDesign.backTextColor
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 趣味
+        // 趣味 - セクション階層の明確化
         Column {
             Text(
                 text = "🎨 趣味・興味",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = cardDesign.backTextColor.copy(alpha = 0.8f)
+                color = cardDesign.backTextColor.copy(alpha = 0.9f)
             )
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -359,15 +370,28 @@ fun BusinessCardBack(
             }
         }
         
+        // 連絡先表示セクション
+        // 電話番号またはメールアドレスが設定されている場合のみ表示
+        val context = LocalContext.current
+        val hasContactInfo = profileData.phoneNumber.isNotEmpty() || profileData.email.isNotEmpty()
+        
+        if (hasContactInfo) {
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            ContactInfoDisplay(
+                phoneNumber = profileData.phoneNumber,
+                email = profileData.email,
+                textColor = cardDesign.backTextColor
+            )
+        }
+        
         // SNSリンク表示セクション
         // 登録されているSNS URLがある場合のみ表示
-        val context = LocalContext.current
         // いずれかのSNS URLが設定されているかチェック
         val hasSnsLinks = profileData.twitterUrl.isNotEmpty() || 
                          profileData.instagramUrl.isNotEmpty() || 
                          profileData.facebookUrl.isNotEmpty() || 
-                         profileData.githubUrl.isNotEmpty() || 
-                         profileData.linkedinUrl.isNotEmpty()
+                         profileData.lineUrl.isNotEmpty()
         
         if (hasSnsLinks) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -375,18 +399,18 @@ fun BusinessCardBack(
             Column {
                 Text(
                     text = "🔗 SNS・リンク",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = cardDesign.backTextColor.copy(alpha = 0.8f)
+                    color = cardDesign.backTextColor.copy(alpha = 0.9f)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 
-                // SNSアイコンを横並びで表示
+                // SNSアイコンを横並びで表示 - タップターゲット最適化
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Twitter/X アイコン（URLが設定されている場合のみ表示）
+                    // Twitter/X アイコン(URLが設定されている場合のみ表示)
                     if (profileData.twitterUrl.isNotEmpty()) {
                         IconButton(
                             onClick = {
@@ -396,10 +420,10 @@ fun BusinessCardBack(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                painter = painterResource(id = R.drawable.ic_twitter),
                                 contentDescription = "Twitter/X",
                                 tint = cardDesign.backTextColor,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                     }
@@ -411,10 +435,10 @@ fun BusinessCardBack(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                painter = painterResource(id = R.drawable.ic_instagram),
                                 contentDescription = "Instagram",
                                 tint = cardDesign.backTextColor,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                     }
@@ -426,40 +450,25 @@ fun BusinessCardBack(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                painter = painterResource(id = R.drawable.ic_facebook),
                                 contentDescription = "Facebook",
                                 tint = cardDesign.backTextColor,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                     }
-                    if (profileData.githubUrl.isNotEmpty()) {
+                    if (profileData.lineUrl.isNotEmpty()) {
                         IconButton(
                             onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.githubUrl))
+                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.lineUrl))
                                 context.startActivity(intent)
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Code,
-                                contentDescription = "GitHub",
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = "LINE",
                                 tint = cardDesign.backTextColor,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                    }
-                    if (profileData.linkedinUrl.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(profileData.linkedinUrl))
-                                context.startActivity(intent)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Work,
-                                contentDescription = "LinkedIn",
-                                tint = cardDesign.backTextColor,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(40.dp)
                             )
                         }
                     }
@@ -475,23 +484,28 @@ fun BusinessCardBack(
 @Composable
 fun InfoItem(icon: String, label: String, value: String, textColor: Color) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
     ) {
         Text(
             text = icon,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.width(32.dp)
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.width(40.dp)
         )
+        Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = textColor.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.labelMedium,
+                color = textColor.copy(alpha = 0.7f),
+                letterSpacing = 0.5.sp
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = textColor
+                color = textColor,
+                fontWeight = FontWeight.Medium
             )
         }
     }

@@ -40,6 +40,7 @@ import com.example.androidbootcampiwatepref.domain.model.BIRTH_DATE_FORMATTER
 import com.example.androidbootcampiwatepref.ui.component.ProfileHeader
 import com.example.androidbootcampiwatepref.ui.component.HobbiesEditor
 import com.example.androidbootcampiwatepref.ui.component.SnsLinksEditor
+import com.example.androidbootcampiwatepref.ui.component.ContactInfoEditor
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -172,8 +173,11 @@ fun ProfileEditContent(
     var twitterUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.twitterUrl)) }
     var instagramUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.instagramUrl)) }
     var facebookUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.facebookUrl)) }
-    var githubUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.githubUrl)) }
-    var linkedinUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.linkedinUrl)) }
+    var lineUrl by remember { mutableStateOf(TextFieldValue(initialProfileData.lineUrl)) }
+    
+    // 連絡先関連
+    var phoneNumber by remember { mutableStateOf(TextFieldValue(initialProfileData.phoneNumber)) }
+    var email by remember { mutableStateOf(TextFieldValue(initialProfileData.email)) }
     
     // 画像URI関連
     // トリミング後のプロフィール画像URIを保持
@@ -243,8 +247,8 @@ fun ProfileEditContent(
     
     // データ変更を通知（初回はスキップ）
     // LaunchedEffect: 監視対象の値が変更されるたびに実行される副作用
-    // SNS URLフィールド（twitterUrl, instagramUrl, facebookUrl, githubUrl, linkedinUrl）も含めて監視
-    LaunchedEffect(nickname.text, bio.text, selectedGenderIndex, selectedDateMillis, hobbies.toList(), twitterUrl.text, instagramUrl.text, facebookUrl.text, githubUrl.text, linkedinUrl.text, currentProfileImageUri, currentHeaderImageUri) {
+    // SNS URLフィールド（twitterUrl, instagramUrl, facebookUrl, lineUrl）、連絡先（phoneNumber, email）も含めて監視
+    LaunchedEffect(nickname.text, bio.text, selectedGenderIndex, selectedDateMillis, hobbies.toList(), twitterUrl.text, instagramUrl.text, facebookUrl.text, lineUrl.text, phoneNumber.text, email.text, currentProfileImageUri, currentHeaderImageUri) {
         if (isFirstComposition) {
             // 初回のCompose時は通知をスキップ（初期値の設定による不要な通知を防ぐ）
             isFirstComposition = false
@@ -260,8 +264,10 @@ fun ProfileEditContent(
                 twitterUrl = twitterUrl.text,
                 instagramUrl = instagramUrl.text,
                 facebookUrl = facebookUrl.text,
-                githubUrl = githubUrl.text,
-                linkedinUrl = linkedinUrl.text
+                lineUrl = lineUrl.text,
+                // 連絡先フィールドを追加
+                phoneNumber = phoneNumber.text,
+                email = email.text
             )
             onDataChange(updatedData, currentProfileImageUri, currentProfileImageOriginalUri, currentHeaderImageUri)
         }
@@ -322,10 +328,12 @@ fun ProfileEditContent(
                             onInstagramUrlChange = { instagramUrl = it },
                             facebookUrl = facebookUrl,
                             onFacebookUrlChange = { facebookUrl = it },
-                            githubUrl = githubUrl,
-                            onGithubUrlChange = { githubUrl = it },
-                            linkedinUrl = linkedinUrl,
-                            onLinkedinUrlChange = { linkedinUrl = it },
+                            lineUrl = lineUrl,
+                            onLineUrlChange = { lineUrl = it },
+                            phoneNumber = phoneNumber,
+                            onPhoneNumberChange = { phoneNumber = it },
+                            email = email,
+                            onEmailChange = { email = it },
                             onAddHobby = {
                                 if (hobbyInput.text.isNotBlank()) {
                                     hobbies.add(hobbyInput.text)
@@ -431,14 +439,21 @@ fun EditCardFront(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_my_icon),
-                    contentDescription = "プロフィール画像",
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "プロフィール画像",
+                        modifier = Modifier.size(70.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             
             // 編集アイコン
@@ -505,10 +520,12 @@ fun EditCardBack(
     onInstagramUrlChange: (TextFieldValue) -> Unit,
     facebookUrl: TextFieldValue,
     onFacebookUrlChange: (TextFieldValue) -> Unit,
-    githubUrl: TextFieldValue,
-    onGithubUrlChange: (TextFieldValue) -> Unit,
-    linkedinUrl: TextFieldValue,
-    onLinkedinUrlChange: (TextFieldValue) -> Unit,
+    lineUrl: TextFieldValue,
+    onLineUrlChange: (TextFieldValue) -> Unit,
+    phoneNumber: TextFieldValue,
+    onPhoneNumberChange: (TextFieldValue) -> Unit,
+    email: TextFieldValue,
+    onEmailChange: (TextFieldValue) -> Unit,
     onAddHobby: () -> Unit,
     onRemoveHobby: (Int) -> Unit
 ) {
@@ -538,26 +555,6 @@ fun EditCardBack(
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        // 生年月日
-        OutlinedTextField(
-            value = selectedDateMillis?.let {
-                birthDateFormatter.format(Date(it))
-            } ?: "",
-            onValueChange = {},
-            label = { Text("🎂 生年月日", color = cardDesign.backTextColor.copy(alpha = 0.7f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onDateClick),
-            enabled = false,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = cardDesign.backTextColor,
-                disabledBorderColor = cardDesign.backTextColor.copy(alpha = 0.5f),
-                disabledLabelColor = cardDesign.backTextColor.copy(alpha = 0.7f)
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
         // 性別選択
         Text(
             "⚥ 性別",
@@ -580,6 +577,26 @@ fun EditCardBack(
         
         Spacer(modifier = Modifier.height(8.dp))
         
+        // 生年月日
+        OutlinedTextField(
+            value = selectedDateMillis?.let {
+                birthDateFormatter.format(Date(it))
+            } ?: "",
+            onValueChange = {},
+            label = { Text("🎂 生年月日", color = cardDesign.backTextColor.copy(alpha = 0.7f)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onDateClick),
+            enabled = false,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = cardDesign.backTextColor,
+                disabledBorderColor = cardDesign.backTextColor.copy(alpha = 0.5f),
+                disabledLabelColor = cardDesign.backTextColor.copy(alpha = 0.7f)
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
         // 趣味入力コンポーネント
         HobbiesEditor(
             hobbies = hobbies,
@@ -587,6 +604,17 @@ fun EditCardBack(
             onHobbyInputChange = onHobbyInputChange,
             onAddHobby = onAddHobby,
             onRemoveHobby = onRemoveHobby,
+            textColor = cardDesign.backTextColor
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // 連絡先入力コンポーネント
+        ContactInfoEditor(
+            phoneNumber = phoneNumber,
+            onPhoneNumberChange = onPhoneNumberChange,
+            email = email,
+            onEmailChange = onEmailChange,
             textColor = cardDesign.backTextColor
         )
         
@@ -600,10 +628,8 @@ fun EditCardBack(
             onInstagramUrlChange = onInstagramUrlChange,
             facebookUrl = facebookUrl,
             onFacebookUrlChange = onFacebookUrlChange,
-            githubUrl = githubUrl,
-            onGithubUrlChange = onGithubUrlChange,
-            linkedinUrl = linkedinUrl,
-            onLinkedinUrlChange = onLinkedinUrlChange,
+            lineUrl = lineUrl,
+            onLineUrlChange = onLineUrlChange,
             textColor = cardDesign.backTextColor
         )
     }

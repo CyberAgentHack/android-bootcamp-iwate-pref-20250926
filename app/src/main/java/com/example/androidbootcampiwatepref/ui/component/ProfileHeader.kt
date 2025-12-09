@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -127,16 +128,22 @@ fun ProfileHeader(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // デフォルト画像を表示
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_my_icon),
-                        contentDescription = "プロフィールアイコン",
+                    // デフォルトアイコンを表示
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "プロフィールアイコン",
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 
                 // 編集可能な場合、編集アイコンを表示

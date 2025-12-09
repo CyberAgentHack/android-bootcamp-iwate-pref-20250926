@@ -20,8 +20,9 @@ data class BusinessCardData(
     val twitterUrl: String = "",
     val instagramUrl: String = "",
     val facebookUrl: String = "",
-    val githubUrl: String = "",
-    val linkedinUrl: String = ""
+    val lineUrl: String = "",
+    val phoneNumber: String = "",
+    val email: String = ""
 ) {
     /**
      * JSONにシリアライズ
@@ -56,8 +57,9 @@ data class BusinessCardData(
             twitterUrl: String = "",
             instagramUrl: String = "",
             facebookUrl: String = "",
-            githubUrl: String = "",
-            linkedinUrl: String = ""
+            lineUrl: String = "",
+            phoneNumber: String = "",
+            email: String = ""
         ): BusinessCardData {
             // 性別インデックスを文字列に変換（共通定数を使用）
             val genderText = GenderOption.fromIndex(genderIndex).label
@@ -81,8 +83,9 @@ data class BusinessCardData(
                 twitterUrl = twitterUrl,
                 instagramUrl = instagramUrl,
                 facebookUrl = facebookUrl,
-                githubUrl = githubUrl,
-                linkedinUrl = linkedinUrl
+                lineUrl = lineUrl,
+                phoneNumber = phoneNumber,
+                email = email
             )
         }
     }

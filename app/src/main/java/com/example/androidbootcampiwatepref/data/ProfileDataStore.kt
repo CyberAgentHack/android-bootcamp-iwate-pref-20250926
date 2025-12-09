@@ -47,8 +47,9 @@ class ProfileDataStore(private val context: Context) {
         private val TWITTER_URL_KEY = stringPreferencesKey("twitter_url")   // Twitter/X URL
         private val INSTAGRAM_URL_KEY = stringPreferencesKey("instagram_url") // Instagram URL
         private val FACEBOOK_URL_KEY = stringPreferencesKey("facebook_url")   // Facebook URL
-        private val GITHUB_URL_KEY = stringPreferencesKey("github_url")       // GitHub URL
-        private val LINKEDIN_URL_KEY = stringPreferencesKey("linkedin_url")   // LinkedIn URL
+        private val LINE_URL_KEY = stringPreferencesKey("line_url")           // LINE URL
+        private val PHONE_NUMBER_KEY = stringPreferencesKey("phone_number")   // 電話番号
+        private val EMAIL_KEY = stringPreferencesKey("email")                 // メールアドレス
         private val THEME_KEY = stringPreferencesKey("theme")               // テーマ設定
         private val FONT_KEY = stringPreferencesKey("font")                 // フォント設定
         private val CARD_DESIGN_KEY = stringPreferencesKey("card_design")   // 名刺デザイン設定
@@ -254,43 +255,63 @@ class ProfileDataStore(private val context: Context) {
     }
     
     /**
-     * GitHub URLを保存
+     * LINE URLを保存
      * 
-     * @param url GitHubのプロフィールURL（例: https://github.com/username）
+     * @param url 保存するURL
      */
-    suspend fun saveGithubUrl(url: String) {
+    suspend fun saveLineUrl(url: String) {
         context.dataStore.edit { preferences ->
-            preferences[GITHUB_URL_KEY] = url
+            preferences[LINE_URL_KEY] = url
         }
     }
     
     /**
-     * GitHub URLを取得（Flow）
+     * LINE URLを取得（Flow）
      * 
-     * @return GitHubのURL、未設定の場合は空文字列
+     * @return LINEのURL、未設定の場合は空文字列
      */
-    val githubUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[GITHUB_URL_KEY] ?: ""
+    val lineUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[LINE_URL_KEY] ?: ""
     }
     
     /**
-     * LinkedIn URLを保存
+     * 電話番号を保存
      * 
-     * @param url LinkedInのプロフィールURL（例: https://linkedin.com/in/username）
+     * @param phoneNumber 保存する電話番号
      */
-    suspend fun saveLinkedinUrl(url: String) {
+    suspend fun savePhoneNumber(phoneNumber: String) {
         context.dataStore.edit { preferences ->
-            preferences[LINKEDIN_URL_KEY] = url
+            preferences[PHONE_NUMBER_KEY] = phoneNumber
         }
     }
     
     /**
-     * LinkedIn URLを取得（Flow）
+     * 電話番号を取得（Flow）
      * 
-     * @return LinkedInのURL、未設定の場合は空文字列
+     * @return 電話番号、未設定の場合は空文字列
      */
-    val linkedinUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[LINKEDIN_URL_KEY] ?: ""
+    val phoneNumberFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PHONE_NUMBER_KEY] ?: ""
+    }
+    
+    /**
+     * メールアドレスを保存
+     * 
+     * @param email 保存するメールアドレス
+     */
+    suspend fun saveEmail(email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[EMAIL_KEY] = email
+        }
+    }
+    
+    /**
+     * メールアドレスを取得（Flow）
+     * 
+     * @return メールアドレス、未設定の場合は空文字列
+     */
+    val emailFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[EMAIL_KEY] ?: ""
     }
     
     // --- テーマ設定関連 ---
@@ -353,8 +374,9 @@ class ProfileDataStore(private val context: Context) {
      * @param twitterUrl Twitter/X URL
      * @param instagramUrl Instagram URL
      * @param facebookUrl Facebook URL
-     * @param githubUrl GitHub URL
-     * @param linkedinUrl LinkedIn URL
+     * @param lineUrl LINE URL
+     * @param phoneNumber 電話番号
+     * @param email メールアドレス
      */
     suspend fun saveProfileData(
         nickname: String,
@@ -365,8 +387,9 @@ class ProfileDataStore(private val context: Context) {
         twitterUrl: String = "",
         instagramUrl: String = "",
         facebookUrl: String = "",
-        githubUrl: String = "",
-        linkedinUrl: String = ""
+        lineUrl: String = "",
+        phoneNumber: String = "",
+        email: String = ""
     ) {
         // 単一のedit操作で全データを更新
         // これによりDataStoreへの書き込みが1回で完了し、効率的
@@ -389,8 +412,11 @@ class ProfileDataStore(private val context: Context) {
             preferences[TWITTER_URL_KEY] = twitterUrl
             preferences[INSTAGRAM_URL_KEY] = instagramUrl
             preferences[FACEBOOK_URL_KEY] = facebookUrl
-            preferences[GITHUB_URL_KEY] = githubUrl
-            preferences[LINKEDIN_URL_KEY] = linkedinUrl
+            preferences[LINE_URL_KEY] = lineUrl
+            
+            // 連絡先を保存
+            preferences[PHONE_NUMBER_KEY] = phoneNumber
+            preferences[EMAIL_KEY] = email
         }
     }
     

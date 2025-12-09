@@ -5,8 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,8 +20,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.domain.model.BusinessCardData
 import com.example.androidbootcampiwatepref.domain.model.CardDesign
 
@@ -85,19 +92,21 @@ fun CardHolderScreen(
                 }
             }
         } else {
-            // 名刺がある場合：スクロール可能なリストで表示
-            LazyColumn(
+            // 名刺がある場合：横3列のグリッド表示
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),  // 横3列固定
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),  // 外側の余白
-                verticalArrangement = Arrangement.spacedBy(12.dp)  // アイテム間の間隔
+                contentPadding = PaddingValues(8.dp),  // 外側の余白
+                horizontalArrangement = Arrangement.spacedBy(8.dp),  // 横方向の間隔
+                verticalArrangement = Arrangement.spacedBy(8.dp)  // 縦方向の間隔
             ) {
                 // items()でリストの各要素を表示
                 // keyを指定することで、リストの再構成時に効率的に更新
                 items(savedCards, key = { it.nickname + it.bio }) { card ->
-                    // 各名刺のアイテムを表示
-                    BusinessCardItem(
+                    // 各名刺のアイテムを表示（プロフィール画面と同じデザイン）
+                    BusinessCardGridItem(
                         card = card,
                         onCardClick = { onCardClick(card) },  // クリック時の処理
                         onDeleteClick = { onDeleteCard(card) }  // 削除時の処理
@@ -109,7 +118,146 @@ fun CardHolderScreen(
 }
 
 /**
- * 名刺一覧の各アイテム表示
+ * グリッド表示用の名刺アイテム（プロフィール画面と同じデザイン）
+ */
+@Composable
+private fun BusinessCardGridItem(
+    card: BusinessCardData,
+    onCardClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    // 削除確認ダイアログの表示状態
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    // カードデザインを取得
+    val cardDesign = try {
+        CardDesign.valueOf(card.cardDesign)
+    } catch (e: Exception) {
+        CardDesign.CLASSIC
+    }
+    
+    // カード本体
+    Card(
+        modifier = Modifier
+            .aspectRatio(0.63f)  // 名刺比率（プロフィール画面と同じ）
+            .clickable(onClick = onCardClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(brush = cardDesign.frontBrush)
+        ) {
+            // 名刺表面デザイン（プロフィール画面と同じレイアウト）
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // プロフィール画像
+                if (!card.profileImageUri.isNullOrEmpty() && card.profileImageUri.isNotBlank()) {
+                    AsyncImage(
+                        model = card.profileImageUri,
+                        contentDescription = "プロフィール画像",
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // デフォルトアイコン（汎用的なPersonアイコン）
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(cardDesign.frontTextColor.copy(alpha = 0.2f))
+                            .border(2.dp, cardDesign.frontTextColor.copy(alpha = 0.3f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "デフォルトアイコン",
+                            modifier = Modifier.size(36.dp),
+                            tint = cardDesign.frontTextColor.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // ニックネーム
+                Text(
+                    text = card.nickname,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = cardDesign.frontTextColor,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 18.sp
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // 自己紹介（省略表示）
+                Text(
+                    text = card.bio,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = cardDesign.frontTextColor.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 14.sp
+                )
+            }
+            
+            // 右上の削除ボタン
+            IconButton(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "削除",
+                    tint = cardDesign.frontTextColor.copy(alpha = 0.7f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+    
+    // 削除確認ダイアログ
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("名刺を削除") },
+            text = { Text("「${card.nickname}」さんの名刺を削除しますか？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteClick()
+                    }
+                ) {
+                    Text("削除")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("キャンセル")
+                }
+            }
+        )
+    }
+}
+
+/**
+ * 名刺一覧の各アイテム表示（旧デザイン - 保持）
  *
  * 名刺のサマリー情報を表示し、クリックで詳細画面へ遷移
  * 削除ボタンで確認ダイアログを表示

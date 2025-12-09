@@ -40,8 +40,9 @@ fun QRCodeDisplayScreen(
     twitterUrl: String,
     instagramUrl: String,
     facebookUrl: String,
-    githubUrl: String,
-    linkedinUrl: String,
+    lineUrl: String,
+    phoneNumber: String,
+    email: String,
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit
 ) {
@@ -62,8 +63,9 @@ fun QRCodeDisplayScreen(
         twitterUrl = twitterUrl,
         instagramUrl = instagramUrl,
         facebookUrl = facebookUrl,
-        githubUrl = githubUrl,
-        linkedinUrl = linkedinUrl
+        lineUrl = lineUrl,
+        phoneNumber = phoneNumber,
+        email = email
     )
     
     // 名刺データをJSON化してQRコード画像を生成

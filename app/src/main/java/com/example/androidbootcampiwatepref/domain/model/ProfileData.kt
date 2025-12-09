@@ -14,8 +14,9 @@ package com.example.androidbootcampiwatepref.domain.model
  * @property twitterUrl Twitter/XのURL
  * @property instagramUrl InstagramのURL
  * @property facebookUrl FacebookのURL
- * @property githubUrl GitHubのURL
- * @property linkedinUrl LinkedInのURL
+ * @property lineUrl LINEのURL
+ * @property phoneNumber 電話番号
+ * @property email メールアドレス
  */
 data class ProfileData(
     val nickname: String = "未設定",
@@ -26,6 +27,7 @@ data class ProfileData(
     val twitterUrl: String = "",
     val instagramUrl: String = "",
     val facebookUrl: String = "",
-    val githubUrl: String = "",
-    val linkedinUrl: String = ""
+    val lineUrl: String = "",
+    val phoneNumber: String = "",
+    val email: String = ""
 )

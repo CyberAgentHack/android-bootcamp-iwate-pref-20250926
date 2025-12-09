@@ -71,15 +71,22 @@ class MainViewModel(
         initialValue = ""
     )
     
-    // GitHub URL
-    val githubUrl = profileDataStore.githubUrlFlow.stateIn(
+    // LINE URL
+    val lineUrl = profileDataStore.lineUrlFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = ""
     )
     
-    // LinkedIn URL
-    val linkedinUrl = profileDataStore.linkedinUrlFlow.stateIn(
+    // 電話番号
+    val phoneNumber = profileDataStore.phoneNumberFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+    
+    // メールアドレス
+    val email = profileDataStore.emailFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = ""
@@ -132,7 +139,7 @@ class MainViewModel(
     // 計算プロパティ: ProfileData
     // 複数のFlowを結合して単一のProfileDataオブジェクトを生成
     // combine演算子: いずれかのFlowが更新されると新しいProfileDataが生成される
-    // SNS URL（twitterUrl, instagramUrl, facebookUrl, githubUrl, linkedinUrl）も含めて管理
+    // SNS URL（twitterUrl, instagramUrl, facebookUrl, lineUrl）、連絡先（phoneNumber, email）も含めて管理
     val profileData: StateFlow<ProfileData> = combine(
         nickname,
         bio,
@@ -142,8 +149,9 @@ class MainViewModel(
         twitterUrl,        // Twitter/X URL
         instagramUrl,     // Instagram URL
         facebookUrl,      // Facebook URL
-        githubUrl,        // GitHub URL
-        linkedinUrl       // LinkedIn URL
+        lineUrl,          // LINE URL
+        phoneNumber,      // 電話番号
+        email             // メールアドレス
     ) { flows ->
         ProfileData(
             nickname = flows[0] as String,
@@ -154,8 +162,9 @@ class MainViewModel(
             twitterUrl = flows[5] as String,      // SNS URLをProfileDataに含める
             instagramUrl = flows[6] as String,
             facebookUrl = flows[7] as String,
-            githubUrl = flows[8] as String,
-            linkedinUrl = flows[9] as String
+            lineUrl = flows[8] as String,
+            phoneNumber = flows[9] as String,     // 電話番号を含める
+            email = flows[10] as String           // メールアドレスを含める
         )
     }.stateIn(
         scope = viewModelScope,
