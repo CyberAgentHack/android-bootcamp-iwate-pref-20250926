@@ -328,7 +328,7 @@ private fun ReceivedCardBack(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Tag,
+                                    painter = painterResource(id = R.drawable.ic_twitter),
                                     contentDescription = "Twitter/X",
                                     tint = cardDesign.backTextColor,
                                     modifier = Modifier.size(28.dp)
@@ -343,7 +343,7 @@ private fun ReceivedCardBack(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Camera,
+                                    painter = painterResource(id = R.drawable.ic_instagram),
                                     contentDescription = "Instagram",
                                     tint = cardDesign.backTextColor,
                                     modifier = Modifier.size(28.dp)
@@ -358,7 +358,7 @@ private fun ReceivedCardBack(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.ThumbUp,
+                                    painter = painterResource(id = R.drawable.ic_facebook),
                                     contentDescription = "Facebook",
                                     tint = cardDesign.backTextColor,
                                     modifier = Modifier.size(28.dp)
