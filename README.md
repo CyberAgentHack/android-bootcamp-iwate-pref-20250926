@@ -24,7 +24,10 @@
   - 1:1アスペクト比の正方形トリミング
   - トリミング前の元画像も保持（拡大表示用）
   - 500x500pxにリサイズしてパフォーマンス最適化
-- **SNSリンク** - Twitter/X、Instagram、Facebook、GitHub、LinkedInのURLを設定
+- **連絡先機能** - 電話番号とメールアドレスを登録・表示
+  - コピーボタン付きで簡単にクリップボードにコピー可能
+  - 適切なKeyboardType（Phone/Email）で入力サポート
+- **SNSリンク** - Twitter/X、Instagram、Facebook、LINEのURLを設定
 - **保存ボタン改善** - TopAppBarに配置され、常に表示
 
 ### ⚙️ システム機能
@@ -42,21 +45,26 @@
 app/src/main/java/com/example/androidbootcampiwatepref/
 ├── MainActivity.kt                    # メインアクティビティ（エントリーポイント）
 ├── data/
-│   └── ProfileDataStore.kt           # データ永続化層（プロフィール、SNS URL、画像URI、名刺ホルダー）
+│   └── ProfileDataStore.kt           # データ永続化層（プロフィール、SNS URL、連絡先、画像URI、名刺ホルダー）
 ├── domain/
 │   └── model/
 │       ├── AppTheme.kt               # テーマEnum
 │       ├── AppFont.kt                # フォントEnum（FontFamilyプロパティ付き）
 │       ├── CardDesign.kt             # カードデザインEnum（6種類）
-│       ├── ProfileData.kt            # プロフィールデータモデル（SNS URLフィールド含む）
-│       └── BusinessCardData.kt       # 名刺データモデル（QRコード用）
+│       ├── GenderOption.kt           # 性別Enum
+│       ├── ProfileData.kt            # プロフィールデータモデル（SNS URL、連絡先含む）
+│       └── BusinessCardData.kt       # 名刺データモデル（QRコード用、連絡先含む）
 ├── navigation/
 │   └── ProfileRoutes.kt              # ナビゲーションルート定義
 ├── ui/
 │   ├── component/
 │   │   ├── ProfileHeader.kt         # プロフィールヘッダーコンポーネント（アイコン+背景画像）
 │   │   ├── ProfileInfoRow.kt        # 情報行コンポーネント
-│   │   └── ImageViewerDialog.kt     # 画像拡大表示ダイアログ
+│   │   ├── ImageViewerDialog.kt     # 画像拡大表示ダイアログ
+│   │   ├── HobbiesEditor.kt         # 趣味入力コンポーネント
+│   │   ├── SnsLinksEditor.kt        # SNSリンク入力コンポーネント
+│   │   ├── ContactInfoEditor.kt     # 連絡先入力コンポーネント（電話・メール）
+│   │   └── ContactInfoDisplay.kt    # 連絡先表示コンポーネント（コピーボタン付き）
 │   ├── navigation/
 │   │   └── AppNavigationGraph.kt    # ナビゲーショングラフ（画面遷移・アニメーション）
 │   ├── screen/
@@ -179,7 +187,8 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
 - アプリ起動時に表示される画面
 - **名刺をタップして反転** - 表面と裏面をフリップアニメーションで切り替え
 - **プロフィール画像をタップ** - 元画像（トリミング前）を拡大表示
-- **SNSアイコン** - 裏面にSNSリンクアイコンを表示（タップでブラウザで開く）
+- **📞 連絡先セクション** - 電話番号とメールアドレスを表示（コピーボタン付き）
+- **🔗 SNSアイコン** - 裏面にSNSリンクアイコンを表示（タップでブラウザで開く）
 - 右上の編集アイコンで編集画面へ遷移
 - 右上の歯車アイコンで設定画面へ遷移
 - 右上のQRコードアイコンで自分のQRコード表示画面へ遷移
@@ -200,12 +209,14 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
    - 性別 (男性/女性/回答しない)
    - 生年月日 (DatePickerから選択)
    - 趣味・興味（「+」ボタンで追加、タグをタップして削除）
-   - **SNS・リンク** - 各SNSプラットフォームのURLを入力
+   - **📞 連絡先** - 電話番号とメールアドレスを入力
+     - 電話番号（KeyboardType.Phone対応）
+     - メールアドレス（KeyboardType.Email対応）
+   - **🔗 SNS・リンク** - 各SNSプラットフォームのURLを入力
      - Twitter/X (https://x.com/username)
      - Instagram (https://instagram.com/username)
      - Facebook (https://facebook.com/username)
-     - GitHub (https://github.com/username)
-     - LinkedIn (https://linkedin.com/in/username)
+     - LINE (https://line.me/ti/p/~username)
 
 4. **保存**
    - 「保存」ボタンで保存して閲覧画面へ戻る
@@ -239,7 +250,7 @@ implementation("androidx.compose.foundation:foundation:1.7.6")  // HorizontalPag
 
 - 受け取った名刺の詳細をフリップアニメーションで表示
 - **表面** - ニックネーム、自己紹介、プロフィールアイコン
-- **裏面** - 性別、生年月日、趣味・興味
+- **裏面** - 性別、生年月日、趣味・興味、連絡先（コピーボタン付き）、SNSリンク
 - **削除ボタン** - 右上のゴミ箱アイコンで削除
 
 ### 名刺の受信（Android Sharesheet）
@@ -293,9 +304,11 @@ class MainViewModel(private val profileDataStore: ProfileDataStore) : ViewModel(
         initialValue = "未設定"
     )
     
-    // 計算プロパティによる状態の派生
+    // 計算プロパティによる状態の派生（11個のFlowを統合）
     val profileData: StateFlow<ProfileData> = combine(
-        nickname, bio, genderIndex, birthDateMillis, hobbies
+        nickname, bio, genderIndex, birthDateMillis, hobbies,
+        twitterUrl, instagramUrl, facebookUrl, lineUrl,
+        phoneNumber, email
     ) { ... }.stateIn(...)
 }
 ```
@@ -332,6 +345,10 @@ class MainViewModel(private val profileDataStore: ProfileDataStore) : ViewModel(
 - `BusinessCardFront`/`BusinessCardBack`: 名刺の表面・裏面コンポーネント（フリップアニメーション対応）
 - `EditCardFront`/`EditCardBack`: 編集用カードコンポーネント（スワイプ対応）
 - `ImageViewerDialog`: 画像の拡大表示ダイアログ
+- `HobbiesEditor`: 趣味入力・タグ表示コンポーネント
+- `SnsLinksEditor`: SNSリンク入力コンポーネント（4プラットフォーム対応）
+- `ContactInfoEditor`: 連絡先入力コンポーネント（電話・メール、KeyboardType対応）
+- `ContactInfoDisplay`: 連絡先表示コンポーネント（コピーボタン付き、ClipboardManager使用）
 
 再利用可能なコンポーネントを作成することで、コードの重複を削減し、メンテナンス性を向上させています。
 
@@ -426,8 +443,10 @@ Android Studioの自動フォーマット機能を使用:
 | `ProfileViewScreen.kt` | 498行 | ⚠️ やや大きい | プロフィール閲覧UI |
 | `CardDetailScreen.kt` | 405行 | ✅ 許容範囲 | 名刺詳細表示 |
 | `QRCodeScannerScreen.kt` | 405行 | ✅ 許容範囲 | QRスキャナー |
-| `SnsLinksEditor.kt` | 146行 | ✅ 適切 | SNSリンク入力フォーム |
+| `SnsLinksEditor.kt` | 146行 | ✅ 適切 | SNSリンク入力フォーム（4プラットフォーム） |
 | `HobbiesEditor.kt` | 108行 | ✅ 適切 | 趣味入力コンポーネント |
+| `ContactInfoEditor.kt` | 86行 | ✅ 適切 | 連絡先入力コンポーネント |
+| `ContactInfoDisplay.kt` | 139行 | ✅ 適切 | 連絡先表示（コピー機能付き） |
 
 ### 実施済みリファクタリング
 
@@ -441,7 +460,9 @@ Android Studioの自動フォーマット機能を使用:
 ```
 ProfileEditScreen.kt (メインUI - 610行)
 ├── SnsLinksEditor.kt (SNSリンク入力 - 146行) ✅ 新規作成
-└── HobbiesEditor.kt (趣味入力 - 108行) ✅ 新規作成
+├── HobbiesEditor.kt (趣味入力 - 108行) ✅ 新規作成
+├── ContactInfoEditor.kt (連絡先入力 - 86行) ✅ 新規作成
+└── ContactInfoDisplay.kt (連絡先表示 - 139行) ✅ 新規作成
 ```
 
 **達成されたメリット:**
