@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
  * SNSリンク入力コンポーネント
  * 
  * 各種SNSプラットフォームのプロフィールURLを入力するフォーム
- * Twitter/X、Instagram、Facebook、GitHub、LinkedInに対応
+ * Twitter/X、Instagram、Facebook、LINEに対応
  * 
  * @param twitterUrl Twitter/X URL
  * @param onTwitterUrlChange Twitter/X URL変更時のコールバック

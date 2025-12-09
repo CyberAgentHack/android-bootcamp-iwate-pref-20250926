@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -85,22 +86,30 @@ fun HobbiesEditor(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 hobbies.forEachIndexed { index, hobby ->
-                    SuggestionChip(
-                        onClick = { onRemoveHobby(index) },
-                        label = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(hobby, style = MaterialTheme.typography.bodySmall)
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = "削除",
-                                    modifier = Modifier.size(14.dp)
-                                )
+                    key("$hobby-$index") {
+                        SuggestionChip(
+                            onClick = { 
+                                // インデックスではなく、値で削除
+                                val currentIndex = hobbies.indexOf(hobby)
+                                if (currentIndex >= 0) {
+                                    onRemoveHobby(currentIndex)
+                                }
+                            },
+                            label = {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(hobby, style = MaterialTheme.typography.bodySmall)
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "削除",
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

@@ -238,6 +238,16 @@ fun ProfileEditContent(
             cropImageLauncher.launch(uCropIntent)
         }
     }
+    
+    // 画像アクセス権限リクエスト用のランチャー（複数権限対応）
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // いずれかの権限が許可されていれば画像選択を開始
+        if (permissions.values.any { it }) {
+            profileImageLauncher.launch("image/*")
+        }
+    }
 
     // ページ管理（0: 基本情報、1: 詳細情報）
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -303,7 +313,50 @@ fun ProfileEditContent(
                             profileImageUri = currentProfileImageUri,
                             cardDesign = cardDesign,
                             onProfileImageClick = {
-                                profileImageLauncher.launch("image/*")
+                                // Android 14+: 選択された写真のみにアクセス（部分的アクセス）
+                                // Android 13: すべての写真にアクセス
+                                // Android 12以下: READ_EXTERNAL_STORAGE 権限が必要
+                                if (android.os.Build.VERSION.SDK_INT >= 34) {
+                                    // Android 14+: 2つの権限を同時にリクエスト
+                                    // READ_MEDIA_IMAGES（すべて）と READ_MEDIA_VISUAL_USER_SELECTED（選択のみ）
+                                    val permissions = arrayOf(
+                                        android.Manifest.permission.READ_MEDIA_IMAGES,
+                                        android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+                                    )
+                                    val hasPermission = permissions.any { permission ->
+                                        androidx.core.content.ContextCompat.checkSelfPermission(
+                                            context, permission
+                                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                    }
+                                    if (hasPermission) {
+                                        profileImageLauncher.launch("image/*")
+                                    } else {
+                                        // 複数権限をリクエスト（ユーザーが「選択のみ」を選べる）
+                                        permissionLauncher.launch(permissions)
+                                    }
+                                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                    // Android 13: すべての写真にアクセス
+                                    val permissions = arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES)
+                                    if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                            context, permissions[0]
+                                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                    ) {
+                                        profileImageLauncher.launch("image/*")
+                                    } else {
+                                        permissionLauncher.launch(permissions)
+                                    }
+                                } else {
+                                    // Android 12以下: 権限チェック
+                                    val permissions = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                            context, permissions[0]
+                                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                    ) {
+                                        profileImageLauncher.launch("image/*")
+                                    } else {
+                                        permissionLauncher.launch(permissions)
+                                    }
+                                }
                             }
                         )
                     }
@@ -336,12 +389,14 @@ fun ProfileEditContent(
                             onEmailChange = { email = it },
                             onAddHobby = {
                                 if (hobbyInput.text.isNotBlank()) {
-                                    hobbies.add(hobbyInput.text)
+                                    hobbies = (hobbies + hobbyInput.text).toMutableList()
                                     hobbyInput = TextFieldValue("")
                                 }
                             },
                             onRemoveHobby = { index ->
-                                hobbies.removeAt(index)
+                                if (index in hobbies.indices) {
+                                    hobbies = hobbies.toMutableList().apply { removeAt(index) }
+                                }
                             }
                         )
                     }
