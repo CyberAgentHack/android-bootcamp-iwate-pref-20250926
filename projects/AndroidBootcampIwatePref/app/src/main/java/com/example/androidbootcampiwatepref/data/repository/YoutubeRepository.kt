@@ -22,6 +22,7 @@ class YoutubeRepository {
     fun getVideos(): List<Video> {
         return List(10) {
             Video(
+                id = 1,
                 title = "【Kotlin】Youtubeクローンの作り方の解説",
                 channelName = "チャンネル名",
                 thumbnailRes = 1,
@@ -31,6 +32,7 @@ class YoutubeRepository {
                 likeCount = 5
             );
             Video(
+                id = 2,
                 title = "【料理】自家製パンの作り方",
                 channelName = "チャンネル名",
                 thumbnailRes = 2,

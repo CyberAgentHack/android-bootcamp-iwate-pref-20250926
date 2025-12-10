@@ -8,6 +8,7 @@ data class Channel(
 
 // 動画のデータ構造
 data class Video(
+    val id: Int = 0,
     val title: String,
     val channelName: String,
     val thumbnailRes: Int,

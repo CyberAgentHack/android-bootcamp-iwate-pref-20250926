@@ -1,7 +1,6 @@
 package com.example.androidbootcampiwatepref.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.annotation.DrawableRes
 import androidx.lifecycle.viewModelScope
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.data.repository.YoutubeRepository
