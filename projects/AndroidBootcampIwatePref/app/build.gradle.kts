@@ -2,7 +2,11 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    kotlin("plugin.serialization") version "2.0.0" // 追加
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -42,7 +46,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.9.22"
     }
     packaging {
         resources {
@@ -72,5 +76,9 @@ dependencies {
     debugImplementation(libs.ui.test.manifest)
     testImplementation(libs.junit)
     implementation(libs.androidx.datastore.preferences)
-
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

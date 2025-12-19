@@ -1,10 +1,18 @@
 package com.example.androidbootcampiwatepref.data.repository
 
+import android.content.Context
+import com.example.androidbootcampiwatepref.data.datastore.AppDataStore
 import com.example.androidbootcampiwatepref.domain.domainobject.Channel
 import com.example.androidbootcampiwatepref.domain.domainobject.Video
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 // データの取得元を抽象化するクラス
-class YoutubeRepository {
+class YoutubeRepository @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private val dataStore = AppDataStore(context)
 
     fun getChannels(): List<Channel> {
         return listOf(
@@ -42,5 +50,14 @@ class YoutubeRepository {
                 likeCount = 10
             )
         }
+    }
+
+
+    fun getLikeCount(videoId: Int): Flow<Int> {
+        return dataStore.getLikeCount(videoId)
+    }
+
+    suspend fun incrementLikeCount(videoId: Int) {
+        dataStore.incrementLikeCount(videoId)
     }
 }

@@ -16,7 +16,9 @@ import com.example.androidbootcampiwatepref.ui.AppNavHost
 import com.example.androidbootcampiwatepref.ui.components.AppBar
 import com.example.androidbootcampiwatepref.ui.components.BottomNavigation
 import com.example.androidbootcampiwatepref.ui.theme.AndroidBootcampIwatePrefTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

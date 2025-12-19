@@ -1,6 +1,6 @@
 [versions]
-agp = "8.13.0"
-kotlin = "1.9.0"
+agp = "8.13.2"
+kotlin = "2.0.0"
 core-ktx = "1.12.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
@@ -9,6 +9,12 @@ lifecycle-runtime-ktx = "2.7.0"
 activity-compose = "1.8.2"
 compose-bom = "2023.08.00"
 navigation = "2.7.7"
+firebaseBom = "34.7.0"
+googleGmsGoogleServices = "4.4.2"
+kotlinxSerialization = "1.9.22"
+hilt = "2.57.1"
+ksp = "2.0.0-1.0.21"
+hiltNavigationCompose = "1.1.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -28,9 +34,17 @@ ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.1.0" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" } # ★ 追加
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" } # ★ 追加
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }
+google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" } # ★ 追加
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" } # ★ 追加

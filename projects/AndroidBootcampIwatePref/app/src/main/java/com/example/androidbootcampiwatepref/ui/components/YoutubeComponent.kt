@@ -3,7 +3,6 @@ package com.example.androidbootcampiwatepref.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,35 +15,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidbootcampiwatepref.data.datastore.AppDataStore
 import com.example.androidbootcampiwatepref.domain.domainobject.Channel
 import com.example.androidbootcampiwatepref.domain.domainobject.Video
-import kotlinx.coroutines.launch
 import kotlin.Boolean
+import com.example.androidbootcampiwatepref.viewmodel.YoutubeViewModel
+
 
 //登録者を表示するコンポーザブル
 @Composable
@@ -84,14 +75,11 @@ fun ChannelItem(
 @Composable
 fun VideoItem(
     video: Video,
+    viewModel: YoutubeViewModel,
     modifier: Modifier = Modifier,
     showLikeButton: Boolean = false
 ) {
-    val context = LocalContext.current
-    val dataStore = remember { AppDataStore(context) }
-    val likeCount by dataStore.getLikeCount(video.id).collectAsState(initial = video.likeCount)
-    val scope = rememberCoroutineScope()
-
+    val likeCount by viewModel.getLikeCount(video.id).collectAsState(initial = video.likeCount)
     Column(
         modifier = modifier.padding(bottom = 18.dp)
     ) {
@@ -176,11 +164,7 @@ fun VideoItem(
 
                     //いいねボタン
                     IconButton(
-                        onClick = {
-                            scope.launch {
-                                dataStore.incrementLikeCount(video.id)
-                            }
-                        },
+                        onClick = { viewModel.onLikeClicked(video.id) },
                         modifier = Modifier.size(24.dp) // ボタンのサイズを小さく調整
                     ) {
                         Icon(

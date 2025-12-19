@@ -21,7 +21,11 @@ fun HomeScreen(
     // 動画リスト
     LazyColumn {
         items(uiState.videos) { video ->
-            VideoItem(video = video)
+            VideoItem(
+                video = video,
+                showLikeButton = false,
+                viewModel = viewModel
+            )
         }
     }
 }

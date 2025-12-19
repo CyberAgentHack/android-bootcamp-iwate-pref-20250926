@@ -39,7 +39,8 @@ fun YoutubeScreen(
             items(uiState.videos) { video ->
                 VideoItem(
                     video = video,
-                    showLikeButton = true
+                    showLikeButton = true,
+                    viewModel = viewModel
                 )
             }
         }

@@ -1,17 +1,22 @@
 package com.example.androidbootcampiwatepref.viewmodel
 
+import androidx.datastore.dataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidbootcampiwatepref.R
 import com.example.androidbootcampiwatepref.data.repository.YoutubeRepository
 import com.example.androidbootcampiwatepref.domain.domainobject.Channel
 import com.example.androidbootcampiwatepref.domain.domainobject.Video
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.map
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 
 // UIの状態を表すデータクラス
 data class YoutubeUiState(
@@ -19,8 +24,9 @@ data class YoutubeUiState(
     val videos: List<Video> = emptyList()
 )
 
-class YoutubeViewModel(
-    private val repository: YoutubeRepository = YoutubeRepository()
+@HiltViewModel
+class YoutubeViewModel @Inject constructor(
+    private val repository: YoutubeRepository
 ) : ViewModel() {
 
     // UIに公開する状態
@@ -64,6 +70,17 @@ class YoutubeViewModel(
             }
         }
     }
+
+    fun getLikeCount(videoId: Int): Flow<Int> {
+        return repository.getLikeCount(videoId)
+    }
+
+    fun onLikeClicked(videoId: Int) {
+        viewModelScope.launch {
+            repository.incrementLikeCount(videoId)
+        }
+    }
+
     // 画像IDをリソースIDに変換
     private fun getIconResource(imageId: Int): Int {
         return when (imageId) {

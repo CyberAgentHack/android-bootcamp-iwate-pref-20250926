@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.androidbootcampiwatepref.ui.screen.HomeScreen
 import com.example.androidbootcampiwatepref.ui.screen.YoutubeScreen
+import com.example.androidbootcampiwatepref.viewmodel.YoutubeViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 ///画面遷移を管理するコンポーザブル
 @Composable
@@ -21,15 +23,18 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
+
         //以下で画面(ルート)を定義
         composable("home") {
+            val youtubeViewModel: YoutubeViewModel = hiltViewModel()
             HomeScreen(
-                viewModel = viewModel()
+                viewModel = youtubeViewModel
             )
         }
         composable("RegisteredChannels") {
+            val youtubeViewModel: YoutubeViewModel = hiltViewModel()
             YoutubeScreen(
-                viewModel = viewModel()
+                viewModel = youtubeViewModel
             )
         }
     }
