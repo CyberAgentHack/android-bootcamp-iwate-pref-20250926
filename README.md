@@ -27,9 +27,9 @@ timeline
          : Hello, Compose!
     
     Day2 : Composeでの状態管理
+         : Composeでのナビゲーション
          : Composeでのレイアウト
          : Lazyリスト
-         : Composeでのナビゲーション
     
     Day3 : Androidアプリの設計原則 と ViewModel・Repository を用いた構造化
          : ViewModelの使い方
@@ -37,7 +37,6 @@ timeline
     
     Day4 : アプリアイコンを設定しよう
          : Androidアプリの配布
-         : Androidの将来性
          : Androidアプリ開発をさらに学ぶ
 
     エントリー : インターンシップ
@@ -102,18 +101,18 @@ timeline
 4. Hello, Compose!
 
 ### 宿題
-Column、RowをはじめとしたJetpack ComposeのUIを調査して自分なりにレイアウトを構築してみましょう！
-レイアウトできたらスクリーンショット(または動画)を撮り、#android_ブートキャンプ岩手に投稿してください！
+Column、RowをはじめとしたJetpack ComposeのUIを調査して自分なりにレイアウトを構築してみましょう！  
+レイアウトできたらスクリーンショット(または動画)を撮り、`#android_bootcamp2025`に投稿してください！  
 (サイバーエージェント社員にメンションもお願いします)
 
 参考サイト
-https://developer.android.com/develop/ui/compose/layouts/basics
-https://developer.android.com/codelabs/jetpack-compose-layouts
+- [Compose レイアウトの基本](https://developer.android.com/develop/ui/compose/layouts/basics)
+- [Compose の基本レイアウト](https://developer.android.com/codelabs/jetpack-compose-layouts)
 
 ## Day2
 1. Composeでの状態管理
-2. Composeでのナビゲーション
-3. Composeでのレイアウト
+2. Composeでのレイアウト
+3. Composeでのナビゲーション
 4. Lazyリスト
 
 ### 宿題
@@ -128,8 +127,10 @@ https://developer.android.com/codelabs/jetpack-compose-layouts
 - タイムライン画面はスクロールして投稿が見れる → 2の要件を満たす
 - ポストにいいねするとポストに❤️がつく → 3の要件を満たす
 
-完成したら画面録画し、その動画を`#android_ブートキャンプ岩手`に投稿してください！  
+完成したら画面録画し、その動画と**ソースコード**を`#android_bootcamp2025`に投稿してください！  
 (サイバーエージェント社員にメンションもお願いします)
+
+今回のソースコード提出は、クローンしたリポジトリ全体をzipファイルにして、アップロードしてください。
 
 ## Day3
 1. ViewModel・RepositoryとApp Architecture
@@ -146,8 +147,3 @@ https://developer.android.com/codelabs/jetpack-compose-layouts
 完成したら、画面録画と**コード**の提出をお願いします。  
 - Git操作が可能な方は`{GitHubアカウント名}/day3`ブランチを作成して、PUSHしてください。
 - Git操作が難しい方はプロジェクトファイルをzipファイルにして提出でもOKです。
-
-## Day4
-1. Androidアプリの配布
-2. Androidの将来性
-3. Androidアプリ開発をさらに学ぶ
