@@ -31,12 +31,12 @@ timeline
          : Composeでのレイアウト
          : Lazyリスト
     
-    Day3 : Kotlin Coroutines
+    Day3 : Androidアプリの設計原則 と ViewModel・Repository を用いた構造化
+         : ViewModelの使い方
          : DataStore
-         : Kotlinx Serialization
     
-    Day4 : Androidアプリの配布
-         : Androidの将来性
+    Day4 : アプリアイコンを設定しよう
+         : Androidアプリの配布
          : Androidアプリ開発をさらに学ぶ
 
     エントリー : インターンシップ
